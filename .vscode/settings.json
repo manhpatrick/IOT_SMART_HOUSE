@@ -1,0 +1,6 @@
+{
+  "npm.autoDetect": "on",
+  "npm.packageManager": "npm",
+  "npm.scriptRunner": "npm",
+  "npm.enableRunFromFolder": true
+}

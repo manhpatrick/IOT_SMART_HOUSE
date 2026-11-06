@@ -1,0 +1,60 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdirSync, unlinkSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
+import { DatabaseSync } from 'node:sqlite';
+import bcrypt from 'bcryptjs';
+import { startTestDatabase } from './helpers/mongodb.js';
+import { connectDB, disconnectDB } from '../src/database/mongodb.js';
+import { migrateSQLite } from '../src/database/migrate-sqlite.js';
+import { User, Device, Telemetry, Command, Setting } from '../models/index.js';
+
+let database, path, hash;
+before(async () => {
+  const temp = fileURLToPath(new URL('../.artifacts/', import.meta.url));
+  mkdirSync(temp, { recursive: true }); path = temp + `migration-${randomUUID()}.sqlite`;
+  const sql = new DatabaseSync(path);
+  sql.exec(`
+    CREATE TABLE users(id TEXT,name TEXT,email TEXT,password_hash TEXT,role TEXT,status TEXT,created_at TEXT,updated_at TEXT);
+    CREATE TABLE devices(id TEXT,name TEXT,profile TEXT,location TEXT,owner_id TEXT,lifecycle TEXT,firmware TEXT,hardware TEXT,mqtt_username TEXT,config TEXT,reported_state TEXT,last_seen TEXT,fault TEXT,created_at TEXT,updated_at TEXT);
+    CREATE TABLE device_access(device_id TEXT,user_id TEXT);
+    CREATE TABLE telemetry(id INTEGER,device_id TEXT,boot_id TEXT,seq INTEGER,recorded_at TEXT,received_at TEXT,temperature REAL,humidity REAL,light_percent REAL);
+    CREATE TABLE commands(id TEXT,device_id TEXT,actor_id TEXT,kind TEXT,payload TEXT,status TEXT,result TEXT,created_at TEXT,expires_at TEXT,completed_at TEXT);
+    CREATE TABLE alerts(id TEXT,device_id TEXT,kind TEXT,severity TEXT,message TEXT,status TEXT,created_at TEXT,acknowledged_at TEXT,acknowledged_by TEXT);
+    CREATE TABLE audit_logs(id INTEGER,actor_id TEXT,actor_name TEXT,action TEXT,target TEXT,detail TEXT,created_at TEXT);
+    CREATE TABLE device_events(id INTEGER,device_id TEXT,from_state TEXT,to_state TEXT,actor_name TEXT,created_at TEXT);
+    CREATE TABLE settings(key TEXT,value TEXT);
+  `);
+  const timestamp = new Date().toISOString(); hash = await bcrypt.hash('fixture-password-123', 4);
+  sql.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('legacy-user', 'Legacy User', 'legacy@example.com', hash, 'operator', 'active', timestamp, timestamp);
+  sql.prepare('INSERT INTO devices VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run('legacy-node', 'Legacy Node', 'climate', 'Lab', 'legacy-user', 'active', '1.0.0', 'ESP32', 'legacy-node', JSON.stringify({ mode: 'MANUAL', fanOn: 30, fanOff: 28, temperatureAlert: 35 }), JSON.stringify({ fan: true }), timestamp, null, timestamp, timestamp);
+  sql.prepare('INSERT INTO device_access VALUES(?,?)').run('legacy-node', 'legacy-user');
+  sql.prepare('INSERT INTO telemetry VALUES(?,?,?,?,?,?,?,?,?)').run(1, 'legacy-node', 'legacy-boot', 4, timestamp, timestamp, 29.5, 65, null);
+  sql.prepare('INSERT INTO commands VALUES(?,?,?,?,?,?,?,?,?,?)').run('legacy-command', 'legacy-node', 'legacy-user', 'actuator', JSON.stringify({ actuator: 'fan', value: true }), 'pending', null, timestamp, new Date(Date.now() + 60000).toISOString(), null);
+  sql.prepare('INSERT INTO alerts VALUES(?,?,?,?,?,?,?,?,?)').run('legacy-alert', 'legacy-node', 'temperature', 'warning', 'Legacy warning', 'open', timestamp, null, null);
+  sql.prepare('INSERT INTO audit_logs VALUES(?,?,?,?,?,?,?)').run(1, 'legacy-user', 'Legacy User', 'device.created', 'legacy-node', '', timestamp);
+  sql.prepare('INSERT INTO device_events VALUES(?,?,?,?,?,?)').run(1, 'legacy-node', null, 'registered', 'Legacy User', timestamp);
+  sql.prepare('INSERT INTO settings VALUES(?,?)').run('workspace', JSON.stringify({ name: 'Legacy Room', timezone: 'Asia/Ho_Chi_Minh', offlineSeconds: 45, retentionDays: 14 }));
+  sql.close();
+  const result = await startTestDatabase('nodo_migration_test'); database = result.database;
+  await connectDB(result.config);
+});
+after(async () => { await disconnectDB(); if (database) await database.stop(); if (path && existsSync(path)) unlinkSync(path); });
+
+test('SQLite migration preserves hashes, ownership, history and source data; rerun is idempotent', async () => {
+  const inserted = await migrateSQLite(path);
+  assert.equal(inserted.users, 1); assert.equal(inserted.devices, 1); assert.equal(inserted.telemetry, 1);
+  assert.equal((await User.findById('legacy-user').select('+password_hash')).password_hash, hash);
+  const device = await Device.findById('legacy-node').lean();
+  assert.equal(device.owner_id, 'legacy-user'); assert.deepEqual(device.viewer_ids, ['legacy-user']);
+  assert.equal(device.config.mode, 'MANUAL'); assert.equal(device.reported_state.fan, true);
+  assert.equal((await Command.findById('legacy-command')).status, 'cancelled');
+  assert.equal((await Setting.findById('workspace')).value.name, 'Legacy Room');
+  assert.equal((await Telemetry.findOne()).recorded_at instanceof Date, true);
+  assert.ok(Object.values(await migrateSQLite(path)).every(count => count === 0));
+  assert.equal(await Telemetry.countDocuments(), 1);
+  const sql = new DatabaseSync(path, { readOnly: true });
+  assert.equal(sql.prepare('SELECT status FROM commands WHERE id=?').get('legacy-command').status, 'pending');
+  sql.close();
+});

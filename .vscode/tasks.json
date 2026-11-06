@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "NODO: npm run dev",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "dev"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "nodo",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting.*server\\.js|Restarting.*server\\.js",
+          "endsPattern": "^NODO Admin: http://"
+        }
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "runOptions": { "instanceLimit": 1 },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "NODO: Kiểm tra MongoDB",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "db:check"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "NODO: Build Tailwind CSS",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "build"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "NODO: Watch Tailwind CSS",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "css:watch"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "runOptions": { "instanceLimit": 1 },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ]
+}

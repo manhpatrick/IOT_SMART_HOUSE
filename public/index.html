@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#161b21"><meta name="description" content="NODO — Quản lý thiết bị, người dùng và dữ liệu IoT cho phòng thông minh.">
+  <title>NODO — IoT Admin</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/app.css"><script src="/assets/chart.umd.js" defer></script><script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Đến nội dung chính</a>
+  <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+  <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính">
+    <a href="#overview" class="brand"><span class="brand-mark">n<span>·</span></span><span>NODO<span class="brand-sub">IOT CONTROL CENTER</span></span></a>
+    <div class="workspace-switch"><span class="workspace-icon" data-icon="building"></span><div><strong>Smart Room</strong><span>Không gian quản lý</span></div><span data-icon="chevrons"></span></div>
+    <div class="nav-label">KHÔNG GIAN LÀM VIỆC</div>
+    <nav id="navigation"></nav>
+    <div class="sidebar-bottom"><div class="system-status"><span class="status-dot"></span><span id="sidebar-status">Đang kết nối hệ thống</span></div><a href="#guide" class="help-link"><span data-icon="book"></span>Tài liệu & phạm vi admin<span>↗</span></a><div class="sidebar-user"><div id="avatar" class="avatar">AD</div><div><strong id="sidebar-name">Quản trị viên</strong><span id="sidebar-role">Administrator</span></div><button class="icon-btn" data-action="logout" title="Đăng xuất" aria-label="Đăng xuất"><span data-icon="logout"></span></button></div></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><div class="flex items-center gap-3"><button class="icon-btn mobile-menu" data-action="menu" aria-label="Mở điều hướng"><span data-icon="menu"></span></button><div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-page">Tổng quan</strong></div></div><div class="topbar-right"><div class="search-box"><span data-icon="search"></span><input id="global-search" aria-label="Tìm trong trang hiện tại" placeholder="Tìm kiếm trong trang..."><kbd>⌘ K</kbd></div><button class="notification-btn" data-action="notifications" aria-label="Xem cảnh báo"><span data-icon="bell"></span><span id="notification-dot" class="notification-dot" hidden></span></button><span class="topbar-divider"></span><span id="top-avatar" class="avatar small">AD</span></div></header>
+    <main id="content" tabindex="-1"><div class="loading-state"><span class="spinner"></span><p>Đang tải không gian của bạn...</p></div></main>
+    <footer class="app-footer"><span>NODO <span class="muted">/</span> Smart Room Management</span><span>ESP32 · MQTT · Express <span class="footer-dot"></span><span id="connection-label">Đang kết nối</span></span></footer>
+  </div>
+  <dialog id="modal" class="app-dialog"><div id="modal-content"></div></dialog>
+  <div id="toasts" class="toast-container" role="status" aria-live="polite"></div>
+</body>
+</html>
