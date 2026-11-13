@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#183e36"><meta name="description" content="NODO Home — Theo dõi và điều khiển ngôi nhà của bạn.">
+  <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Nhà của bạn — NODO Home</title>
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/assets/favicon.svg"><link rel="apple-touch-icon" href="/assets/icon-192.png">
+  <link rel="stylesheet" href="/assets/home.css">
+  <link rel="stylesheet" href="/assets/ai.css">
+  <script src="/assets/chart.umd.js" defer></script><script src="/assets/ai-panel.js" defer></script><script src="/assets/home.js" defer></script><script src="/assets/pwa.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Đến nội dung chính</a>
+  <aside class="home-sidebar">
+    <a class="home-brand" href="/app"><span class="logo">n<span>·</span></span><span>NODO<small>HOME, CONNECTED.</small></span></a>
+    <div class="house-select"><label for="house-picker">KHÔNG GIAN CỦA BẠN</label><select id="house-picker" aria-label="Chọn nhà"><option>Đang tải...</option></select></div>
+    <nav id="side-nav" aria-label="Điều hướng"></nav>
+    <div class="sidebar-end"><button class="side-action" data-action="join">＋ Tham gia bằng mã mời</button><button class="side-action" data-action="install">↗ Cài NODO lên điện thoại</button><div class="identity"><span id="user-initial" class="avatar">N</span><div><strong id="user-name">Đang kết nối</strong><small id="user-role"></small></div><button class="logout" data-action="logout" aria-label="Đăng xuất">↪</button></div></div>
+  </aside>
+  <div class="home-shell">
+    <header class="home-topbar"><div><span class="online-dot" id="server-dot"></span><span id="connection-text" role="status">Đang kết nối máy chủ</span></div><div class="topbar-actions"><a id="admin-link" href="/" hidden>Admin console ↗</a><button data-action="refresh" class="text-button" aria-label="Làm mới">↻ <span>Làm mới</span></button><button data-action="account" class="account-button" aria-label="Tài khoản">Cá nhân</button></div></header>
+    <div id="connection-banner" class="connection-banner" role="status" hidden></div>
+    <main id="main" tabindex="-1"><div class="empty"><span class="loader"></span><h1>Đang mở ngôi nhà của bạn…</h1></div></main>
+    <footer class="home-footer"><span>NODO Home <span> / </span> Mỗi không gian, một kết nối.</span><span id="updated-at">Chưa nhận dữ liệu</span></footer>
+  </div>
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Điều hướng điện thoại"></nav>
+  <dialog id="home-dialog"><div id="dialog-body"></div></dialog>
+  <div id="home-toasts" role="status" aria-live="polite"></div>
+</body>
+</html>

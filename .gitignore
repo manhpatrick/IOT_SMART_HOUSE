@@ -3,6 +3,7 @@ data/
 .env
 .env.*
 !.env.example
+!.env.mqtt-lab.example
 .artifacts/
 coverage/
 *.log
@@ -11,3 +12,8 @@ coverage/
 *.sqlite-wal
 .DS_Store
 Thumbs.db
+# Local hardware credentials and generated firmware build output
+firmware/**/secrets.h
+firmware/**/config.local.h
+firmware/**/.pio/
+deployment/**/dynamic-security.json

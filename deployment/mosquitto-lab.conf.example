@@ -1,0 +1,11 @@
+# Local lab only. Copy to .artifacts/mosquitto-lab/mosquitto.conf and edit both paths.
+# Run mosquitto from the project root. Do not expose this plaintext listener to the Internet.
+per_listener_settings false
+listener 1884
+allow_anonymous false
+plugin REPLACE_WITH_ABSOLUTE_PATH_TO_mosquitto_dynamic_security.dll_OR_so
+plugin_opt_config_file REPLACE_WITH_ABSOLUTE_PATH_TO_dynamic-security.json
+log_type error
+log_type warning
+log_type notice
+log_type information

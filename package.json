@@ -7,20 +7,29 @@
     "url": "git+https://github.com/manhpatrick/H-th-ng-IOT-th-ng-minh.git"
   },
   "type": "module",
-  "description": "Express + HTML + Tailwind admin starter for a two-node ESP32 project",
+  "description": "Smart home IoT: Express, MongoDB, MQTT, PWA and local anomaly detection",
   "engines": {
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env src/server.js",
-    "start": "node --env-file-if-exists=.env src/server.js",
-    "seed": "node --env-file-if-exists=.env src/database/seed-data.js",
-    "db:check": "node --env-file-if-exists=.env src/database/check-connection.js",
-    "migrate:sqlite": "node --env-file-if-exists=.env src/database/migrate-sqlite.js",
-    "build": "tailwindcss -i ./frontend/styles.css -o ./public/assets/app.css --minify",
-    "css:watch": "tailwindcss -i ./frontend/styles.css -o ./public/assets/app.css --watch",
-    "test": "node --test --test-concurrency=1 tests/api.test.js tests/migration.test.js",
-    "test:ui": "node tests/browser.mjs"
+    "docker:up": "node deployment/start-local.js",
+    "docker:mqtt": "node deployment/start-local.js --mqtt",
+    "docker:mqtt:build": "node deployment/start-local.js --mqtt --build",
+    "docker:build": "node deployment/start-local.js --build",
+    "dev": "node --watch --env-file-if-exists=.env backend/src/server.js",
+    "dev:lan": "node --watch --env-file-if-exists=.env backend/src/server.js --lan",
+    "start": "node --env-file-if-exists=.env backend/src/server.js",
+    "seed": "node --env-file-if-exists=.env database/seed-data.js",
+    "db:check": "node --env-file-if-exists=.env database/check-connection.js",
+    "mqtt:sample": "node backend/scripts/mqtt-sample.js",
+    "ai:demo": "node backend/scripts/ai-demo.js",
+    "migrate:sqlite": "node --env-file-if-exists=.env database/migrate-sqlite.js",
+    "build": "tailwindcss -i ./frontend/styles.css -o ./frontend/public/assets/app.css --minify",
+    "css:watch": "tailwindcss -i ./frontend/styles.css -o ./frontend/public/assets/app.css --watch",
+    "test": "node --test --test-concurrency=1 tests/api.test.js tests/homes.test.js tests/migration.test.js tests/ai.test.js tests/ai-api.test.js",
+    "test:ui": "node tests/browser.mjs",
+    "test:home-ui": "node tests/home-browser.mjs",
+    "test:ai-ui": "node tests/ai-browser.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

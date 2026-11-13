@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { mkdirSync, existsSync } from 'node:fs';
-import { createApplication } from '../src/app.js';
+import { createApplication } from '../backend/src/app.js';
 import { startTestDatabase } from './helpers/mongodb.js';
 
 const {database,config}=await startTestDatabase('nodo_browser_test');
@@ -39,9 +39,39 @@ try{
   await page.screenshot({path:'.artifacts/dashboard-mobile.png',fullPage:true,animations:'disabled'});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Mobile page must not overflow horizontally');
   await page.setViewportSize({width:1440,height:1050});
-  for(const [route,title]of[['devices','Quản lý thiết bị'],['users','Quản lý người dùng'],['telemetry','Dữ liệu cảm biến'],['commands','Lịch sử điều khiển'],['alerts','Cảnh báo & sự kiện'],['audit','Nhật ký hệ thống'],['settings','Cài đặt không gian'],['guide','Phạm vi quản trị & tích hợp']]){
+  for(const [route,title]of[['homes','Quản lý ngôi nhà'],['devices','Quản lý thiết bị'],['users','Quản lý người dùng'],['telemetry','Dữ liệu cảm biến'],['commands','Lịch sử điều khiển'],['alerts','Cảnh báo & sự kiện'],['audit','Nhật ký hệ thống'],['settings','Cài đặt không gian'],['guide','Phạm vi quản trị & tích hợp']]){
     await page.goto(base+'/#'+route);await page.getByRole('heading',{name:title,exact:true}).waitFor();
   }
+  await page.goto(base+'/#telemetry');
+  await page.waitForFunction(()=>{const metrics=document.querySelector('.telemetry-metrics');return metrics&&getComputedStyle(metrics).display==='grid';});
+  assert.equal(await page.locator('.telemetry-table caption').evaluate(el=>getComputedStyle(el).position),'absolute','Accessible caption must not shift table columns');
+  assert.equal(await page.locator('#telemetry-table-panel>.table-wrap').evaluate(el=>getComputedStyle(el).maxHeight),'560px');
+  await page.getByLabel('Chọn node').selectOption('node-01');
+  await page.waitForFunction(()=>{const chart=Chart.getChart(document.querySelector('#telemetry-chart'));return chart?.data.datasets.length===2&&chart.data.datasets.every(d=>!d.label.includes('Trạm chiếu sáng'));});
+  assert.equal(await page.locator('.telemetry-table th').count(),5,'Climate-only table must omit lighting column');
+  assert.equal(await page.locator('.telemetry-table tbody tr').count(),25);
+  await page.getByRole('button',{name:'Sau',exact:true}).click();
+  const heldRow=await page.locator('.telemetry-table tbody tr').first().innerText();
+  await page.waitForTimeout(4500);
+  assert.equal(await page.locator('.telemetry-table tbody tr').first().innerText(),heldRow,'Realtime refresh must preserve a historical page');
+  await page.getByRole('button',{name:'Về mới nhất',exact:true}).click();
+  await application.iot.ingest('node-01',{deviceId:'node-01',bootId:'chart-ui-test',seq:777,timestamp:new Date().toISOString(),readings:{temperature:52,humidity:56},state:{fan:false,mode:'AUTO'}});
+  await page.waitForFunction(()=>[...document.querySelectorAll('.telemetry-new')].some(row=>row.textContent.includes('777')));
+  assert.equal(await page.evaluate(()=>Chart.getChart(document.querySelector('#telemetry-chart')).scales.y.max>=52),true,'Out-of-range temperature must remain visible on the chart');
+  await page.getByLabel('Số dòng mỗi trang').selectOption('50');
+  assert.equal(await page.locator('.telemetry-table tbody tr').count(),50);
+  await page.getByLabel('Chọn node').selectOption('node-02');
+  await page.waitForFunction(()=>Chart.getChart(document.querySelector('#telemetry-chart'))?.data.datasets.length===1);
+  assert.equal(await page.locator('.telemetry-table th').count(),4,'Lighting-only table must omit climate columns');
+  await page.getByRole('button',{name:'6 giờ',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('[data-action="telemetry-period"][data-hours="6"]')?.getAttribute('aria-pressed')==='true');
+  await page.getByLabel('Chọn node').selectOption('all');
+  await page.waitForFunction(()=>Chart.getChart(document.querySelector('#telemetry-chart'))?.data.datasets.length===3);
+  await page.screenshot({path:'.artifacts/telemetry-desktop.png',fullPage:true,animations:'disabled'});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Telemetry mobile page must not overflow');
+  await page.screenshot({path:'.artifacts/telemetry-mobile.png',fullPage:true,animations:'disabled'});
+  await page.setViewportSize({width:1440,height:1050});
   await page.goto(base+'/#users');await page.getByRole('button',{name:'Thêm người dùng',exact:true}).click();
   await page.getByLabel('Họ và tên').fill('Người dùng QA');await page.getByLabel('Email',{exact:true}).fill('qa@nodo.local');await page.locator('#user-form [name="password"]').fill('Testing@12345');
   await page.getByRole('button',{name:'Tạo tài khoản',exact:true}).click();await page.getByText('qa@nodo.local',{exact:true}).waitFor();
@@ -67,15 +97,16 @@ try{
   await card().getByRole('button',{name:'Chi tiết thiết bị',exact:true}).click();await page.getByRole('switch',{name:'Quạt',exact:true}).click();
   await waitForDevice(d=>d.reported_state.fan===true);
   await page.goto(base+'/#commands');await page.locator('td .badge').filter({hasText:'Đã áp dụng'}).first().waitFor();
+  await application.iot.receiveStatus('qa-node',{online:true,fault:'qa_sensor_fault'});
   await page.goto(base+'/#alerts');await page.getByRole('button',{name:'Xác nhận',exact:true}).first().click();await page.locator('.alert-item .badge').filter({hasText:'Đã xác nhận'}).first().waitFor();
   await page.goto(base+'/#telemetry');const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Xuất CSV',exact:true}).click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'nodo-telemetry.csv');
   await page.setViewportSize({width:390,height:844});await page.goto(base+'/#overview');await page.getByRole('heading',{name:'Tổng quan hệ thống'}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Mobile page must not overflow horizontally');
   await page.getByRole('button',{name:'Mở điều hướng',exact:true}).click();await page.getByRole('link',{name:/Tài liệu & phạm vi admin/}).click();await page.getByRole('heading',{name:'Phạm vi quản trị & tích hợp'}).waitFor();
-  await page.setViewportSize({width:1440,height:1050});await page.getByRole('button',{name:'Đăng xuất',exact:true}).click();await page.getByRole('button',{name:'Viewer',exact:true}).click();await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();await page.getByRole('heading',{name:'Tổng quan hệ thống'}).waitFor();
+  await page.setViewportSize({width:1440,height:1050});await page.getByRole('button',{name:'Đăng xuất',exact:true}).click();await page.getByRole('button',{name:'Viewer',exact:true}).click();await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();await page.getByRole('heading',{name:'Nhà của tôi',exact:true}).waitFor();
   assert.equal(await page.getByRole('link',{name:'Người dùng',exact:true}).count(),0);
   assert.deepEqual(errors,[],'Browser must not report uncaught JS errors');
-  console.log('Browser QA passed: 9 pages, user creation, onboarding, provisioning, activation, config ACK, actuator ACK, alert acknowledgment, CSV download, mobile navigation, viewer permissions, WebSocket.');
+  console.log('Browser QA passed: 10 pages including homes, user creation, onboarding, provisioning, activation, config ACK, actuator ACK, alert acknowledgment, CSV download, mobile navigation, viewer permissions, WebSocket.');
   console.log('Screenshots: .artifacts/login-desktop.png, dashboard-desktop.png, dashboard-mobile.png');
 }catch(error){
   const page=browser?.contexts()[0]?.pages()[0];

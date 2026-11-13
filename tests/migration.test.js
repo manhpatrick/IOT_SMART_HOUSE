@@ -6,9 +6,9 @@ import { randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import bcrypt from 'bcryptjs';
 import { startTestDatabase } from './helpers/mongodb.js';
-import { connectDB, disconnectDB } from '../src/database/mongodb.js';
-import { migrateSQLite } from '../src/database/migrate-sqlite.js';
-import { User, Device, Telemetry, Command, Setting } from '../models/index.js';
+import { connectDB, disconnectDB } from '../database/mongodb.js';
+import { migrateSQLite } from '../database/migrate-sqlite.js';
+import { User, Device, Telemetry, Command, Setting } from '../database/models/index.js';
 
 let database, path, hash;
 before(async () => {

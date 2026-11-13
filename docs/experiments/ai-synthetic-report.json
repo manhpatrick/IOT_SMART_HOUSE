@@ -1,0 +1,1397 @@
+{
+  "generated_at": "2026-11-13T07:24:28.986Z",
+  "data_source": "synthetic fixtures, not ESP32 measurements or real login history",
+  "hardware_validated": false,
+  "sensor": {
+    "training": {
+      "algorithm": "Elman tanh RNN + Adam/BPTT",
+      "features": [
+        "temperature",
+        "humidity"
+      ],
+      "settings": {
+        "stepMs": 10000,
+        "window": 12,
+        "minPoints": 360,
+        "hidden": 8,
+        "epochs": 40,
+        "seed": 42
+      },
+      "raw_rows": 720,
+      "resampled_points": 720,
+      "ranges": {
+        "train": [
+          1794547470000,
+          1794551780000
+        ],
+        "validation": [
+          1794551790000,
+          1794553220000
+        ],
+        "test": [
+          1794553230000,
+          1794554660000
+        ]
+      },
+      "windows": {
+        "train": 420,
+        "validation": 132,
+        "test": 132
+      },
+      "curve": [
+        {
+          "epoch": 1,
+          "train_mse": 0.9664837299450358,
+          "validation_mse": 0.8466434802610532
+        },
+        {
+          "epoch": 2,
+          "train_mse": 0.7789321619387835,
+          "validation_mse": 0.6883913137618681
+        },
+        {
+          "epoch": 3,
+          "train_mse": 0.4002892903740982,
+          "validation_mse": 0.350647872480904
+        },
+        {
+          "epoch": 4,
+          "train_mse": 0.21878512848833698,
+          "validation_mse": 0.22686853076521432
+        },
+        {
+          "epoch": 5,
+          "train_mse": 0.18827000278465136,
+          "validation_mse": 0.21715520667681587
+        },
+        {
+          "epoch": 6,
+          "train_mse": 0.17043466773226199,
+          "validation_mse": 0.1847422734016144
+        },
+        {
+          "epoch": 7,
+          "train_mse": 0.156003997202019,
+          "validation_mse": 0.17249159683229287
+        },
+        {
+          "epoch": 8,
+          "train_mse": 0.1467754635525216,
+          "validation_mse": 0.16095088096186327
+        },
+        {
+          "epoch": 9,
+          "train_mse": 0.1383500572562576,
+          "validation_mse": 0.1504893151425416
+        },
+        {
+          "epoch": 10,
+          "train_mse": 0.12844649637311856,
+          "validation_mse": 0.1421899480421179
+        },
+        {
+          "epoch": 11,
+          "train_mse": 0.11411618726868746,
+          "validation_mse": 0.12839125012236483
+        },
+        {
+          "epoch": 12,
+          "train_mse": 0.09073725800262099,
+          "validation_mse": 0.10741542053786826
+        },
+        {
+          "epoch": 13,
+          "train_mse": 0.05369807950183274,
+          "validation_mse": 0.06949207473273104
+        },
+        {
+          "epoch": 14,
+          "train_mse": 0.023860384668285124,
+          "validation_mse": 0.036600736609354284
+        },
+        {
+          "epoch": 15,
+          "train_mse": 0.01780489749719298,
+          "validation_mse": 0.030154507637233676
+        },
+        {
+          "epoch": 16,
+          "train_mse": 0.015030050970474867,
+          "validation_mse": 0.03168946083612072
+        },
+        {
+          "epoch": 17,
+          "train_mse": 0.013073644737502358,
+          "validation_mse": 0.026916520446675724
+        },
+        {
+          "epoch": 18,
+          "train_mse": 0.011650492254227327,
+          "validation_mse": 0.023809664479297027
+        },
+        {
+          "epoch": 19,
+          "train_mse": 0.010341260380516446,
+          "validation_mse": 0.020783879811502336
+        },
+        {
+          "epoch": 20,
+          "train_mse": 0.0093700329952723,
+          "validation_mse": 0.02009238886892633
+        },
+        {
+          "epoch": 21,
+          "train_mse": 0.008513305692939293,
+          "validation_mse": 0.019617356754046793
+        },
+        {
+          "epoch": 22,
+          "train_mse": 0.007760121402645378,
+          "validation_mse": 0.018420487729255166
+        },
+        {
+          "epoch": 23,
+          "train_mse": 0.007181199893768812,
+          "validation_mse": 0.015856440218402844
+        },
+        {
+          "epoch": 24,
+          "train_mse": 0.006581260959576365,
+          "validation_mse": 0.014717912134011382
+        },
+        {
+          "epoch": 25,
+          "train_mse": 0.00636247069252629,
+          "validation_mse": 0.01736917320456104
+        },
+        {
+          "epoch": 26,
+          "train_mse": 0.005644949408551064,
+          "validation_mse": 0.013463115171473184
+        },
+        {
+          "epoch": 27,
+          "train_mse": 0.00532350748015275,
+          "validation_mse": 0.012881962658609615
+        },
+        {
+          "epoch": 28,
+          "train_mse": 0.004897964656873491,
+          "validation_mse": 0.012953573887885936
+        },
+        {
+          "epoch": 29,
+          "train_mse": 0.004585253351606312,
+          "validation_mse": 0.011759449213061351
+        },
+        {
+          "epoch": 30,
+          "train_mse": 0.004313155539726888,
+          "validation_mse": 0.011598168330377311
+        },
+        {
+          "epoch": 31,
+          "train_mse": 0.004091836527004053,
+          "validation_mse": 0.011252996336019505
+        },
+        {
+          "epoch": 32,
+          "train_mse": 0.0038641552941675234,
+          "validation_mse": 0.010260141912777444
+        },
+        {
+          "epoch": 33,
+          "train_mse": 0.0037097834785360224,
+          "validation_mse": 0.01071473124792093
+        },
+        {
+          "epoch": 34,
+          "train_mse": 0.003408158376591347,
+          "validation_mse": 0.00950070792724106
+        },
+        {
+          "epoch": 35,
+          "train_mse": 0.003297759710795987,
+          "validation_mse": 0.00926919910848957
+        },
+        {
+          "epoch": 36,
+          "train_mse": 0.0030698461909637723,
+          "validation_mse": 0.009152136122213925
+        },
+        {
+          "epoch": 37,
+          "train_mse": 0.0029831482120907513,
+          "validation_mse": 0.008441425089091726
+        },
+        {
+          "epoch": 38,
+          "train_mse": 0.002767836554535164,
+          "validation_mse": 0.008427562898109236
+        },
+        {
+          "epoch": 39,
+          "train_mse": 0.0026525205076838895,
+          "validation_mse": 0.008592419426387691
+        },
+        {
+          "epoch": 40,
+          "train_mse": 0.0025366351223042025,
+          "validation_mse": 0.008180853214209971
+        }
+      ],
+      "threshold": 0.08,
+      "calibration": "99th percentile validation residual; floor 0.08",
+      "test": {
+        "samples": 132,
+        "temperature": {
+          "mae": 0.07852495285112,
+          "rmse": 0.08647608078748846,
+          "unit": "°C"
+        },
+        "humidity": {
+          "mae": 0.24850296218759813,
+          "rmse": 0.2659295185936835,
+          "unit": "%RH"
+        }
+      },
+      "baseline_persistence": {
+        "samples": 132,
+        "temperature": {
+          "mae": 0.03512329914153046,
+          "rmse": 0.0392573874269335,
+          "unit": "°C"
+        },
+        "humidity": {
+          "mae": 0.05971856688564894,
+          "rmse": 0.06826206192777791,
+          "unit": "%RH"
+        }
+      },
+      "detection_metrics": null,
+      "detection_note": "Không có nhãn bất thường độc lập trong dữ liệu huấn luyện; chưa công bố precision/recall/F1.",
+      "experimental": true
+    },
+    "labelled_test": {
+      "samples": 132,
+      "tp": 14,
+      "tn": 114,
+      "fp": 4,
+      "fn": 0,
+      "precision": 0.7777777777777778,
+      "recall": 1,
+      "f1": 0.8750000000000001
+    },
+    "label_note": "Two injected spikes, point-level evaluation; not field fault-detection performance.",
+    "predictions": [
+      {
+        "time": "2026-11-13T07:02:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00479631040404826,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:02:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004346598668981526,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:02:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.003998354236599198,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:02:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0037487409768488106,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.003591637668334541,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.003517856739167178,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0035152432425729283,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.003568923462729045,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.003661979411673674,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:03:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0037767535068070797,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0038968424049960443,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004009641095304368,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00410908423975811,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004198048845172869,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004289780704269171,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:04:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004407728878122994,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004583342325627621,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004851700003101787,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.005245280299607238,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.005786666799684257,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.006481445394472877,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:05:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.007312859644724683,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 22.19705090124257,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:10.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 4.492251904513256,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:20.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 2.1766158139579446,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:30.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 2.3100604719834448,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:40.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 2.428217321378365,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:06:50.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 2.549134462315824,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:00.000Z",
+        "actual": false,
+        "predicted": true,
+        "score": 9.857846259242391,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:10.000Z",
+        "actual": false,
+        "predicted": true,
+        "score": 1.6100229331385139,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00806816628869868,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.07887820071374499,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.046352955728740895,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:07:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.021148606765672248,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.013296908560450332,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010024667154179002,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009479387070429297,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010094036171113738,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010417497597296356,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:08:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01021706674901269,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00969921341123732,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009239850566975325,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.008671589605469324,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00801388228552926,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.007298401345986956,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:09:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.006566042400028346,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0058632931279349425,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00523829179984334,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00473688792348559,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0043990179653935245,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004255693346390586,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:10:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0043268494691161945,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.004620222046309503,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.005131311296409469,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.005844381807058145,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.00673434184560634,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.007769263133272419,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:11:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.008913249020921263,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010129340224113836,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.011382164070690075,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.012640083658776901,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01387668189226019,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.015071512258114294,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:12:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01621014914140207,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.017283657890924422,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.018287661392359635,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01922119371627385,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.020085501513026262,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0208828928813254,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:13:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02161566556867389,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.022285099830436958,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.022890498171412497,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023428300980188024,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023891389696994884,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02426877506122959,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:14:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02454591508304102,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.024705878043247677,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02473144168084655,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.024608012050719587,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02432699659900077,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023889039941248868,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:15:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023306396768584405,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 23.53123040091706,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:10.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.898680945730622,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:20.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.65446328538167,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:30.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.727739645537334,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:40.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.773711719933132,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:16:50.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.792233432631047,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.785016963295519,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:10.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 13.754024314857194,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:20.000Z",
+        "actual": false,
+        "predicted": true,
+        "score": 1.2860768896734815,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:30.000Z",
+        "actual": false,
+        "predicted": true,
+        "score": 0.15339068193917502,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02415855459353918,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:17:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023857520498889333,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02222573725901171,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.017316160945925266,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.013913674053316356,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.012298901418103388,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.011423108809162709,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:18:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010731797879739111,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0100881899540726,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009529551523317047,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009117774801372285,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.008896608942039417,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.008865586518167778,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:19:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009017965436916318,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009336371055206554,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.009795217007082295,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.010363661056687613,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.011008765193571473,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.011698536719482908,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:20:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.012404569217836224,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.013104077113375866,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.013781213442267657,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.014427657838873576,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.015042541958655405,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.015631832080177377,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:21:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01620731245281651,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.016785313835199305,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01738531828351121,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.01802855206740475,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.018736659819745278,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.0195305374645518,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:22:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.020429388178492575,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02145005054756805,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.022606625602336686,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:20.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.023910394996901133,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:30.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.025369975527467517,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:40.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02699160072002972,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:23:50.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.02877936992173944,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:24:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.03073527499513233,
+        "threshold": 0.08
+      },
+      {
+        "time": "2026-11-13T07:24:10.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 0.032858819962318216,
+        "threshold": 0.08
+      }
+    ]
+  },
+  "login": {
+    "algorithm": "circular-kde-v1",
+    "labelled_test": {
+      "samples": 24,
+      "tp": 12,
+      "tn": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1,
+      "recall": 1,
+      "f1": 1
+    },
+    "label_note": "Known generated usual/unusual hours; not real intrusion-detection performance.",
+    "predictions": [
+      {
+        "time": "2026-10-20T01:10:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706692286689305,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-19T20:11:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.289902498208292,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-20T01:12:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706094869613822,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-19T20:13:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.123235831541535,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-21T01:14:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706602595051913,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-20T20:10:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.373652498208337,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-21T01:11:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.7062553864775785,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-20T20:12:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.206430275986026,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-22T01:13:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.7062106400318395,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-21T20:14:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.04031916487482,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-22T01:10:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706692286689305,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-21T20:11:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.289902498208292,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-23T01:12:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706094869613822,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-22T20:13:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.123235831541535,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-23T01:14:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706602595051913,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-22T20:10:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.373652498208337,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-24T01:11:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.7062553864775785,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-23T20:12:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.206430275986026,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-24T01:13:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.7062106400318395,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-23T20:14:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.04031916487482,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-25T01:10:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706692286689305,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-24T20:11:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.289902498208292,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-25T01:12:00.000Z",
+        "actual": false,
+        "predicted": false,
+        "score": 5.706094869613822,
+        "threshold": 6.706094869613823
+      },
+      {
+        "time": "2026-10-24T20:13:00.000Z",
+        "actual": true,
+        "predicted": true,
+        "score": 18.123235831541535,
+        "threshold": 6.706094869613823
+      }
+    ]
+  }
+}

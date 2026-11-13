@@ -1,0 +1,12 @@
+node_modules
+.git
+.env
+.env.*
+data
+.artifacts
+coverage
+*.log
+.vscode
+firmware
+hardware
+tests

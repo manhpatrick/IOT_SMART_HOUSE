@@ -1,6 +1,8 @@
 # MQTT contract — ESP32 ↔ Backend
 
-Node 01: `climate` = nhiệt độ/độ ẩm + quạt/còi. Node 02: `lighting` = ánh sáng + LED. Dùng hai ESP32, ID/client ID/tài khoản MQTT riêng. Không có cửa hoặc servo.
+Phạm vi vật lý của nhóm: **một ESP32**. Backend hiện hỗ trợ hai profile độc lập: `climate` (nhiệt độ/độ ẩm + quạt/còi) và `lighting` (ánh sáng + LED). Các ví dụ node-01/node-02 dưới đây minh họa hai profile, không bắt buộc hai board. Node ghép MQTTX hiện dùng `hw-climate-01`, profile climate.
+
+Firmware nhóm cung cấp có cả DHT11/MQ-2/LDR/LED/quạt/còi trên một board. Profile gộp và trường gas chưa có ở BE; firmware còn dùng giao thức cũ. Xem [review firmware](../firmware/REVIEW.md) trước khi nạp/ghép. Không có cửa hoặc servo trong phạm vi này.
 
 ## Topic
 
@@ -62,7 +64,7 @@ Khi kết nối và mỗi 10 giây:
 { "online": true, "firmware": "1.0.0", "fault": null }
 ```
 
-`fault` có thể là mô tả lỗi ngắn. Khi ngắt có chủ đích, publish offline trước DISCONNECT vì LWT chủ yếu dành cho ngắt bất thường. Ngưỡng offline mặc định 35 giây, có thể chỉnh từ admin. Broker LWT có thể đến sau tùy keepalive; heartbeat timeout vẫn giúp BE phát hiện.
+`fault` có thể là mô tả lỗi ngắn. Gửi null chỉ khi đã kiểm tra không còn lỗi; heartbeat không có trường fault giữ lỗi cũ, không tự xóa fault chỉ vì đã gửi được bản tin. Khi ngắt có chủ đích, publish offline trước DISCONNECT vì LWT chủ yếu dành cho ngắt bất thường. Ngưỡng offline mặc định 35 giây, có thể chỉnh từ admin. Broker LWT có thể đến sau tùy keepalive; heartbeat timeout vẫn giúp BE phát hiện.
 
 ## Lệnh điều khiển
 
@@ -114,11 +116,13 @@ ESP32 gửi sau khi thực thi:
 }
 ```
 
-Nếu lỗi: `status: "failed"`, thêm message. Thiếu commandId hoặc ACK sai topic sẽ không xác nhận được lệnh. ACK trùng không áp dụng lại. Backend chỉ cập nhật config khi applied và chưa hết hạn.
+Nếu lỗi: `status: "failed"`, thêm message. Thiếu commandId hoặc ACK sai topic sẽ không xác nhận được lệnh. ACK trùng không áp dụng lại. ACK mới phải được BE nhận trước expiresAt; ACK đúng hạn đã ghi bền vững có thể được đối soát sau đó nếu DB tạm lỗi. Chỉ đánh dấu applied sau khi lưu được config/trạng thái tương ứng.
 
 Firmware cần kiểm tra expiresAt và deviceId, bỏ lệnh hết hạn, ghi nhớ các commandId gần nhất và gửi lại ACK cũ khi nhận trùng. MQTT PUBACK không thay thế application ACK. Backend hiện không tự retry lệnh; người dùng có thể gửi lại sau timeout với commandId mới.
 
 ## Kiểm thử ghép phần cứng
+
+Quy trình cài broker, bàn giao credential và ghép từng bước: [HARDWARE-INTEGRATION.md](HARDWARE-INTEGRATION.md). Danh sách 40 ca có thao tác/expected/minh chứng: [TEST-PLAN.md](TEST-PLAN.md). Tạo gói mẫu có timestamp hiện tại bằng `node backend/scripts/mqtt-sample.js hw-climate-01 climate`; không copy nguyên timestamp minh họa cũ khi thử.
 
 1. Đọc dữ liệu thật → publish → BE lưu → web cập nhật.
 2. Đổi ngưỡng/Auto/Manual → ACK → DB và UI cập nhật.

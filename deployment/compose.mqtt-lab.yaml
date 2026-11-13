@@ -1,0 +1,13 @@
+# Overlay on compose.local.yaml: keep the local DB/web, replace the simulator with MQTT.
+services:
+  app:
+    env_file:
+      - ../.env.mqtt-lab
+    environment:
+      DEMO_MODE: "false"
+      MQTT_URL: mqtt://host.docker.internal:1884
+      MQTT_USERNAME: nodo-backend
+      MQTT_TOPIC_PREFIX: smartroom
+      MQTT_DYNAMIC_SECURITY: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

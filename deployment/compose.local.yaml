@@ -1,0 +1,39 @@
+# Isolated software demo. No Atlas credentials, no physical MQTT broker.
+name: nodo-local
+services:
+  mongo:
+    image: mongo:8.0
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ping: 1}).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+  app:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3080
+      TRUST_PROXY: 0
+      MONGODB_URI: mongodb://mongo:27017/nodo_docker_demo
+      MONGODB_DB_NAME: nodo_docker_demo
+      DEMO_MODE: "true"
+      AI_ENABLED: "true"
+      # Public demo value, strictly for the localhost-only setup.
+      SESSION_SECRET: nodo-local-docker-demo-only-session-secret
+      ADMIN_EMAIL: admin@nodo.local
+      ADMIN_PASSWORD: Admin@12345
+    ports:
+      - "127.0.0.1:3080:3080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  mongo_data:

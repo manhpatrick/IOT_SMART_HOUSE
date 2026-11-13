@@ -1,6 +1,6 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApplication } from '../src/app.js';
+import { createApplication } from '../backend/src/app.js';
 import { startTestDatabase } from './helpers/mongodb.js';
 
 let application, database, config, base;
@@ -133,10 +133,10 @@ test('audit logs omit password material and logout revokes the session', async (
   assert.equal((await request(auth, '/devices')).status, 401);
 });
 test('MongoDB records and authenticated sessions survive application restart', async () => {
-  const auth = await login(), count = await application.models.Telemetry.countDocuments();
+  const auth = await login(), savedIds = await application.models.Telemetry.distinct('_id');
   await application.close();
   application = await createApplication(config); await listen();
   assert.equal((await request(auth, '/devices')).status, 200);
   assert.equal((await application.iot.device('node-01')).lifecycle, 'locked');
-  assert.equal(await application.models.Telemetry.countDocuments(), count);
+  assert.equal(await application.models.Telemetry.countDocuments({ _id: { $in: savedIds } }), savedIds.length);
 });

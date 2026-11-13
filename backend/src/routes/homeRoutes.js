@@ -1,0 +1,15 @@
+import express from 'express';
+import { rateLimit } from 'express-rate-limit';
+import * as c from '../controller/home.controller.js';
+const route = express.Router();
+const sensitive = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false });
+route.get('/', c.listHomes); route.post('/', c.createHome);
+route.post('/accept-invitation', sensitive, c.acceptInvite);
+route.get('/:homeId', c.getHome); route.patch('/:homeId', c.updateHome);
+route.post('/:homeId/rooms', c.createRoom);
+route.patch('/:homeId/rooms/:roomId', c.updateRoom); route.delete('/:homeId/rooms/:roomId', c.deleteRoom);
+route.patch('/:homeId/devices/:deviceId', c.updateNode); route.post('/:homeId/claim', sensitive, c.claimNode);
+route.get('/:homeId/invitations', c.invitations); route.post('/:homeId/invitations', sensitive, c.invite);
+route.delete('/:homeId/invitations/:invitationId', c.revokeInvite);
+route.delete('/:homeId/members/:userId', c.removeMember);
+export default route;

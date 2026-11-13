@@ -1,0 +1,12 @@
+import express from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { operatorMiddleware } from '../middleware/adminMiddleware.js';
+import * as c from '../controller/ai.controller.js';
+const route=express.Router();
+route.get('/summary',c.summary);
+route.get('/devices/:id',c.getDeviceAI);
+route.post('/devices/:id/train',operatorMiddleware,rateLimit({windowMs:3600_000,limit:10,standardHeaders:'draft-8',legacyHeaders:false}),c.trainDevice);
+route.get('/login-history',c.loginHistory);
+route.get('/security-alerts',c.securityAlerts);
+route.patch('/security-alerts/:id/review',c.reviewLogin);
+export default route;
