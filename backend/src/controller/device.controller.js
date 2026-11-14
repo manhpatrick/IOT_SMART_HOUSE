@@ -70,7 +70,7 @@ export async function sendCommand(req, res) {
 }
 
 export async function updateConfig(req, res) {
-  const device = await scopedDevice(req, true), input = configSchema(device.profile).parse(req.body);
+  const device = await scopedDevice(req, true), input = configSchema(device.profile).parse({ ...device.config, ...req.body });
   res.status(202).json(await req.app.locals.iot.sendCommand(device, req.user, 'config', input));
 }
 

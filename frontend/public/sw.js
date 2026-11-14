@@ -1,6 +1,6 @@
 // Only the public UI is cached. Never cache API responses, credentials or telemetry.
-const CACHE = 'nodo-shell-v4';
-const SHELL = ['/app','/login','/assets/home.css','/assets/app.css','/assets/ai.css','/assets/home.js','/assets/ai-panel.js','/assets/login.js','/assets/pwa.js','/assets/chart.umd.js','/assets/favicon.svg','/assets/icon-192.png','/assets/icon-512.png','/manifest.webmanifest','/offline.html'];
+const CACHE = 'nodo-shell-v5';
+const SHELL = ['/app','/login','/assets/home.css','/assets/app.css','/assets/ai.css','/assets/gas.css','/assets/gas.js','/assets/home.js','/assets/ai-panel.js','/assets/login.js','/assets/pwa.js','/assets/chart.umd.js','/assets/favicon.svg','/assets/icon-192.png','/assets/icon-512.png','/manifest.webmanifest','/offline.html'];
 self.addEventListener('install',event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',event => { event.waitUntil(Promise.all([caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('nodo-shell-') && key !== CACHE).map(key => caches.delete(key)))),self.clients.claim()])); });
 self.addEventListener('fetch',event => {

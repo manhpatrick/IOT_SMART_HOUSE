@@ -19,6 +19,10 @@ const deviceSchema = new mongoose.Schema({
   config: { type: mongoose.Schema.Types.Mixed, required: true },
   reported_state: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
   last_command_id: { type: String, default: null },
+  gas_alarm_active: { type: Boolean, default: false },
+  gas_raw: { type: Number, default: null },
+  gas_recorded_at: { type: Date, default: null },
+  gas_buzzer_owned: { type: Boolean, default: false },
   last_seen: { type: Date, default: null },
   fault: { type: String, default: null, maxlength: 200 },
 }, { ...modelOptions, minimize: false });

@@ -2,6 +2,8 @@
 
 Nguồn: file `esp32_sensor.ino` nhóm cung cấp từ Downloads. Đây là firmware Arduino C++ cho **một ESP32** có DHT11, MQ-2, LDR, LED, relay/quạt và còi. Mã là bản nền đã nhập, **chưa tương thích MQTT với backend NODO hiện tại**. Chưa compile hoặc nạp/thử trên board; máy không tìm thấy arduino-cli/PlatformIO. File gốc trong Downloads không bị thay đổi.
 
+**Cập nhật BE/FE:** đã hỗ trợ readings.gasRaw tùy chọn trên climate, ngưỡng gasThreshold/gasClearThreshold, cảnh báo gas và lệnh buzzer có ACK. Xem [GAS-ALARM](../docs/GAS-ALARM.md). Firmware bên dưới vẫn legacy chưa đổi transport. Các ghi chú ban đầu “BE chưa có gas” cần đọc theo cập nhật này; profile LDR/LED gộp vẫn chưa có.
+
 ## Đã làm trong lần nhập
 
 - Đặt sketch tại `esp32_sensor/esp32_sensor.ino`, thư mục trùng tên theo cách mở Arduino IDE.

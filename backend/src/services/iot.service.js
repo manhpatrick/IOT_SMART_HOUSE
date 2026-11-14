@@ -56,16 +56,22 @@ export function createIoT({ demo, notify, mqttOptions = {}, onReading=()=>{} }) 
     if (d.lifecycle !== 'active') throw fail(403, 'Thiết bị chưa hoạt động hoặc đã bị thu hồi.');
     if (Date.parse(data.timestamp) > Date.now() + 120_000 || Date.parse(data.timestamp) < Date.now() - 7 * 86400_000) throw fail(400, 'Timestamp ngoài khoảng cho phép.');
     if (d.profile === 'climate' && (data.readings.temperature === undefined || data.readings.humidity === undefined || data.readings.lightPercent !== undefined)) throw fail(400, 'Node môi trường chỉ gửi temperature và humidity.');
-    if (d.profile === 'lighting' && (data.readings.lightPercent === undefined || data.readings.temperature !== undefined || data.readings.humidity !== undefined)) throw fail(400, 'Node ánh sáng chỉ gửi lightPercent.');
+    if (d.profile === 'lighting' && (data.readings.lightPercent === undefined || data.readings.temperature !== undefined || data.readings.humidity !== undefined || data.readings.gasRaw !== undefined)) throw fail(400, 'Node ánh sáng chỉ gửi lightPercent.');
     const r = data.readings;
     try {
-      await Telemetry.create({ device_id: id, source:demo?'demo':'hardware', boot_id: data.bootId, seq: data.seq, recorded_at: new Date(data.timestamp), temperature: r.temperature ?? null, humidity: r.humidity ?? null, light_percent: r.lightPercent ?? null });
+      await Telemetry.create({ device_id: id, source:demo?'demo':'hardware', boot_id: data.bootId, seq: data.seq, recorded_at: new Date(data.timestamp), temperature: r.temperature ?? null, humidity: r.humidity ?? null, light_percent: r.lightPercent ?? null, gas_raw: r.gasRaw ?? null });
     } catch (error) { if (error.code === 11000) return { duplicate: true }; throw error; }
     const newer = !d.latest || Date.parse(data.timestamp) >= Date.parse(d.latest.recorded_at);
     await Device.updateOne({ _id: id, lifecycle: 'active' }, { $set: { last_seen: new Date(), ...(newer && data.state ? { reported_state: { ...d.reported_state, ...data.state } } : {}) } });
     await resolveAlert(id, 'offline');
     const fresh = newer && Date.now() - Date.parse(data.timestamp) <= ((await workspace()).dataStaleSeconds || 60) * 1000;
     if (fresh) {
+      if (r.gasRaw !== undefined) {
+        const active = r.gasRaw >= (d.config.gasThreshold ?? 1200) || (!!d.gas_alarm_active && r.gasRaw > (d.config.gasClearThreshold ?? 1000));
+        await Device.updateOne({_id:id},{$set:{gas_alarm_active:active,gas_raw:r.gasRaw,gas_recorded_at:new Date(data.timestamp)}});
+        if(active) await alert(id,'gas','critical',`Gas ADC ${r.gasRaw} vượt/duy trì ngưỡng cảnh báo ${d.config.gasThreshold??1200}; kết thúc khi ≤ ${d.config.gasClearThreshold??1000}. Kiểm tra môi trường và cảm biến.`);
+        else await resolveAlert(id,'gas');
+      }
       await resolveAlert(id, 'stale');
       if (r.temperature >= d.config.temperatureAlert) await alert(id, 'temperature', 'warning', `Nhiệt độ ${r.temperature}°C vượt ngưỡng ${d.config.temperatureAlert}°C.`);
       else if (r.temperature !== undefined) await resolveAlert(id, 'temperature');
@@ -86,10 +92,15 @@ export function createIoT({ demo, notify, mqttOptions = {}, onReading=()=>{} }) 
       if (!cmd) return;
     }
     const receipt = cmd.ack_payload;
+    if(cmd.source==='gas_rule'&&receipt.status==='applied'&&receipt.state?.buzzer!==cmd.payload.value){
+      await Command.updateOne({_id:cmd._id,status:'pending'},{$set:{status:'failed',result:'ACK báo động gas thiếu/sai trạng thái buzzer.',completed_at:new Date()}});
+      notify('command');return;
+    }
     if (receipt.status === 'applied' && d.last_command_id !== cmd._id) {
       const changes = {};
       if (cmd.kind === 'config') changes.config = cmd.payload;
       if (receipt.state) changes.reported_state = { ...d.reported_state, ...receipt.state };
+      if(cmd.source==='gas_rule'&&cmd.payload.value===false)changes.gas_buzzer_owned=false;
       await Device.updateOne({ _id: id, lifecycle: 'active' }, { $set: { ...changes, last_command_id: cmd._id } });
     }
     await Command.updateOne({ _id: cmd._id, status: 'pending' }, { $set: { status: receipt.status, result: receipt.message || (receipt.status === 'applied' ? 'Node xác nhận đã áp dụng' : 'Node báo lỗi'), completed_at: new Date() } });
@@ -109,22 +120,44 @@ export function createIoT({ demo, notify, mqttOptions = {}, onReading=()=>{} }) 
     });
   const broker = createBroker({ demo, options: mqttOptions, notify, onTelemetry: ingest, onAck: acknowledge, onStatus: receiveStatus });
 
-  const sendCommand = (original, actor, kind, payload) => withDeviceLock(original.id, async () => {
+  const sendCommand = (original, actor, kind, payload, source='user') => withDeviceLock(original.id, async () => {
     const d = await device(original.id);
     if (d.lifecycle !== 'active' || d.connection !== 'online') throw fail(409, 'Thiết bị phải đang hoạt động và online để nhận lệnh.');
-    if (kind === 'actuator' && d.config.mode !== 'MANUAL') throw fail(409, 'Chuyển sang chế độ Thủ công trước khi điều khiển trực tiếp.');
+    if(kind==='actuator'&&payload.actuator==='buzzer'&&payload.value===false&&d.gas_alarm_active)throw fail(409,'Gas còn cảnh báo; chưa cho phép tắt còi.');
+    if(source==='gas_rule'&&(kind!=='actuator'||payload.actuator!=='buzzer'))throw fail(400,'Quy tắc gas chỉ điều khiển còi.');
+    if(source==='gas_rule'&&(!d.gas_recorded_at||Date.now()-Date.parse(d.gas_recorded_at)>((await workspace()).dataStaleSeconds||60)*1000||payload.value!==!!d.gas_alarm_active))throw fail(409,'Trạng thái gas đã thay đổi hoặc dữ liệu cũ.');
+    if(source==='gas_rule'&&payload.value===false&&(d.fault||d.data_status!=='fresh'||!(d.latest?.temperature<d.config.temperatureAlert)))throw fail(409,'Chưa đủ điều kiện giải phóng còi gas.');
+    if (kind === 'actuator' && d.config.mode !== 'MANUAL' && source!=='gas_rule') throw fail(409, 'Chuyển sang chế độ Thủ công trước khi điều khiển trực tiếp.');
     if (!broker.state.connected) throw fail(503, 'Chưa kết nối được MQTT broker.');
     let command;
-    try { command = await Command.create({ device_id: d.id, home_id: d.home_id, actor_id: actor.id, kind, payload, expires_at: new Date(Date.now() + 15_000) }); }
+    try { command = await Command.create({ device_id: d.id, home_id: d.home_id, actor_id: actor?.id??null, source, kind, payload, expires_at: new Date(Date.now() + 15_000) }); }
     catch (error) { if (error.code === 11000) throw fail(409, 'Thiết bị đang chờ xác nhận lệnh trước đó.'); throw error; }
     try { await broker.send(command.toObject()); }
     catch {
       await Command.updateOne({ _id: command._id, status: 'pending' }, { $set: { status: 'failed', result: 'Không gửi được đến broker', completed_at: new Date() } });
       throw fail(503, 'Gửi lệnh MQTT thất bại.');
     }
-    await audit(actor, `device.${kind}`, d.id, JSON.stringify(payload), d.home_id); notify('command');
+    if(source==='gas_rule'&&payload.value)await Device.updateOne({_id:d.id},{$set:{gas_buzzer_owned:true}});
+    await audit(actor, source==='gas_rule'?'device.gas_alarm':`device.${kind}`, d.id, JSON.stringify(payload), d.home_id); notify('command');
     return toPublic(command);
   });
+
+  async function enforceGasAlarm(id) {
+    const d=await device(id);
+    if(d.lifecycle!=='active'||d.connection!=='online'||!broker.state.connected||d.pendingCommand||!d.gas_recorded_at)return;
+    if(Date.now()-Date.parse(d.gas_recorded_at) > ((await workspace()).dataStaleSeconds||60)*1000)return;
+    let desired;
+    if(d.gas_alarm_active && d.reported_state.buzzer!==true)desired=true;
+    else if(!d.gas_alarm_active && d.gas_buzzer_owned && d.data_status==='fresh' && !d.fault && d.latest?.temperature<d.config.temperatureAlert){
+      if(d.reported_state.buzzer===false){await Device.updateOne({_id:id},{$set:{gas_buzzer_owned:false}});return;}
+      desired=false;
+    }
+    if(desired===undefined)return;
+    // Avoid flooding a node that is offline in practice or cannot understand the command.
+    if(await Command.exists({device_id:id,source:'gas_rule','payload.value':desired,created_at:{$gt:new Date(Date.now()-30000)}}))return;
+    try{await sendCommand(d,null,'actuator',{actuator:'buzzer',value:desired},'gas_rule');}
+    catch(error){if(![409,503].includes(error.status))throw error;}
+  }
 
   const transition = (original, target, actor) => withDeviceLock(original.id, async () => {
     const d = await device(original.id);
@@ -148,6 +181,7 @@ export function createIoT({ demo, notify, mqttOptions = {}, onReading=()=>{} }) 
     for (const cmd of await Command.find({ status: 'pending', ack_received_at: { $ne: null } }).lean()) await acknowledge(cmd.device_id, cmd.ack_payload);
     const expired = await Command.updateMany({ status: 'pending', ack_received_at: null, expires_at: { $lte: new Date() } }, { $set: { status: 'timeout', result: 'Node không xác nhận trong 15 giây; trạng thái thực tế cần kiểm tra lại.', completed_at: new Date() } });
     if (expired.modifiedCount) notify('command');
+    for(const gasDevice of await Device.find({profile:'climate',lifecycle:'active',$or:[{gas_alarm_active:true},{gas_buzzer_owned:true}]}).select('_id').lean())await enforceGasAlarm(gasDevice._id);
     if (demo) {
       for (const cmd of await Command.find({ status: 'pending', created_at: { $lt: new Date(Date.now() - 700) } }).lean()) {
         const d = await device(cmd.device_id);
@@ -161,12 +195,13 @@ export function createIoT({ demo, notify, mqttOptions = {}, onReading=()=>{} }) 
         const d = await device(row._id); if (paused.has(d.id)) continue;
         const phase = Date.now() / 95_000;
         const readings = d.profile === 'climate' ? { temperature: +(28.6 + 1.8 * Math.sin(phase)).toFixed(1), humidity: +(64 + 4 * Math.cos(phase)).toFixed(1) } : { lightPercent: Math.round(35 + 20 * Math.sin(phase / 2)) };
+        if(d.profile==='climate'&&d.gas_raw!==null&&d.gas_raw!==undefined)readings.gasRaw=d.gas_raw;
         const state = { ...d.reported_state, mode: d.config.mode };
         if (d.config.mode === 'AUTO') {
           if (d.profile === 'climate') {
             if (readings.temperature >= d.config.fanOn) state.fan = true;
             if (readings.temperature <= d.config.fanOff) state.fan = false;
-            state.buzzer = readings.temperature >= d.config.temperatureAlert;
+            state.buzzer = readings.temperature >= d.config.temperatureAlert || !!d.gas_alarm_active;
           } else {
             if (readings.lightPercent <= d.config.lightOn) state.light = true;
             if (readings.lightPercent >= d.config.lightOff) state.light = false;

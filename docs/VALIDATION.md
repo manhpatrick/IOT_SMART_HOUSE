@@ -1,5 +1,9 @@
 # Kết quả kiểm tra sau khi sắp xếp repository
 
+## Bổ sung gas — 14/11/2026
+
+`npm test`: **45/45 PASS** (40 test cũ + 5 test gas). Browser admin và Home PASS; `npm run test:gas-ui` PASS cho ngưỡng gas, telemetry, Home mobile và viewer. Docker MQTT đã build lại và app/Mongo healthy; health API, gas.js và gas.css trả HTTP 200. Các thử nghiệm gas dùng ADC/ACK giả lập trong DB test; chưa xác minh còi/ESP32 thật. Xem [GAS-ALARM](GAS-ALARM.md).
+
 ## Kiểm tra trước khi push main — 14/11/2026
 
 - `npm test`: **40/40 PASS**, khoảng 33,4 giây, database test tạm riêng.

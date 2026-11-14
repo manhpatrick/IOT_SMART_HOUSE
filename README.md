@@ -125,6 +125,8 @@ Nếu email đã thuộc ID khác hoặc Device ID có profile khác trên Atlas
 
 ## Chức năng admin
 
+Đã bổ sung [gas MQ-2 và còi báo động](docs/GAS-ALARM.md): số ADC, ngưỡng có hysteresis, cảnh báo gas, lệnh còi tự động có ACK và panel trên admin/Home. Climate nhận thêm gasRaw tùy chọn; firmware legacy cần sửa transport để thực hiện lệnh vật lý.
+
 AI đã có panel **AI & bảo mật** trên admin và `/app#ai`: RNN cảm biến huấn luyện trong Node worker, circular KDE phát hiện giờ đăng nhập khác thói quen, lịch sử/cảnh báo riêng cho tài khoản. [Hướng dẫn dữ liệu, huấn luyện, đánh giá và Docker/firmware](docs/AI-GUIDE.md). Chạy `npm.cmd run ai:demo` để tạo báo cáo synthetic riêng, không ghi vào Atlas/tài khoản thật.
 
 - Dashboard realtime, biểu đồ, online/offline, cảnh báo và hoạt động.

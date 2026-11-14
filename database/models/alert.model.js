@@ -4,7 +4,7 @@ import { identifier } from './base.js';
 const alertSchema = new mongoose.Schema({
   _id: identifier,
   device_id: { type: String, ref: 'Device', required: true },
-  kind: { type: String, enum: ['temperature', 'offline', 'stale', 'fault', 'ai_anomaly'], required: true },
+  kind: { type: String, enum: ['temperature', 'gas', 'offline', 'stale', 'fault', 'ai_anomaly'], required: true },
   ai_model_id: { type: String, default: null },
   severity: { type: String, enum: ['warning', 'critical'], required: true },
   message: { type: String, required: true, maxlength: 500 },

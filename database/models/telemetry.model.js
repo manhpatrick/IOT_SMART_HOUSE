@@ -12,6 +12,7 @@ const telemetrySchema = new mongoose.Schema({
   temperature: { type: Number, min: -40, max: 80, default: null },
   humidity: { type: Number, min: 0, max: 100, default: null },
   light_percent: { type: Number, min: 0, max: 100, default: null },
+  gas_raw: { type: Number, min: 0, max: 4095, default: null },
 }, { versionKey: false });
 telemetrySchema.index({ device_id: 1, boot_id: 1, seq: 1 }, { unique: true });
 telemetrySchema.index({ device_id: 1, recorded_at: -1 });

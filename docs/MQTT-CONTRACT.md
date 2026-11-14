@@ -33,6 +33,8 @@ ESP32 chỉ publish telemetry/status/ack của chính mình; chỉ subscribe com
 
 `temperature`: °C, [-40,80]. `humidity`: %RH, [0,100]. Climate phải có cả hai trường. Không gửi giá trị đọc lỗi như NaN hoặc số giả; gửi trạng thái lỗi và thử đọc lại.
 
+Climate nhận thêm `readings.gasRaw` tùy chọn: số nguyên ADC 0–4095. Backend lưu gas_raw, cảnh báo gas và tự gửi lệnh buzzer có ACK; cấu hình thêm gasThreshold/gasClearThreshold. Chi tiết giao thức, hysteresis và thử MQTTX tại [GAS-ALARM](GAS-ALARM.md). Không gửi MQ-2 raw dưới dạng ppm và không gửi giá trị 0 thay cho cảm biến lỗi.
+
 ## Telemetry lighting
 
 ```json

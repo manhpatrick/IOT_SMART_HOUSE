@@ -2,6 +2,8 @@
 
 Cập nhật **14/11/2026**, phạm vi demo **một ESP32 vật lý**. Tài liệu này là trạng thái hiện tại; các bảng kết quả theo ngày trong VALIDATION.md giữ lại lịch sử kiểm tra.
 
+**Bổ sung gas:** BE/FE đã nhận gasRaw tùy chọn trên climate, lưu ADC/CSV, hiển thị gas, cấu hình ngưỡng và tạo cảnh báo/lệnh còi cả Auto/Manual với ACK/timeout/hysteresis. Chi tiết [GAS-ALARM](GAS-ALARM.md). Firmware legacy vẫn cần sửa giao thức trước khi còi vật lý nhận lệnh; profile gộp LDR/LED chưa hoàn thành.
+
 ## Đã có
 
 - Repo chia firmware/backend/frontend/database/deployment/hardware/tests/docs; npm và lockfile ở gốc.
@@ -31,7 +33,7 @@ Chi tiết: [firmware/REVIEW](../firmware/REVIEW.md), [PINOUT](../hardware/PINOU
 | Mức | Việc cần làm | Trạng thái |
 | --- | --- | --- |
 | P0 | Profile gộp: temperature/humidity/lightPercent/gasRaw, fan/light/buzzer | Chưa có; cần sửa đồng bộ schema/model/defaults/validation/ingest/config/commands/FE/alerts/tests |
-| P0 | Gas threshold/cảnh báo gas và ngưỡng đèn trên node gộp | Chưa có; climate hiện chỉ điều khiển quạt/còi, lighting riêng điều khiển đèn |
+| P0 | Ngưỡng đèn trên node gộp | Gas đã có trên climate; LDR/LED gộp và quy tắc đèn trên cùng node vẫn chưa có |
 | P1 | Test MQTT hai chiều: config/Manual/ACK/timeout, khóa node, sai topic; ghép ESP32 thật | Đã thấy kết nối và số đo MQTTX; chưa đủ bằng chứng ACK/ACL/board toàn luồng |
 | P1 | Phân biệt retained online cũ với heartbeat mới | Điểm R18 trong TEST-PLAN còn cần xử lý/kiểm chứng |
 | P1 | HTTPS, MQTT/TLS, điện thoại từ xa và phục hồi container/DB/model | Docker local đã chạy; chưa hoàn tất triển khai công khai, backup/restore và persistence đầu cuối |
