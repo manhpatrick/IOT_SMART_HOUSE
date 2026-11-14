@@ -75,7 +75,7 @@ test('telemetry validates ranges and identity; MongoDB unique index deduplicates
   await assert.rejects(application.iot.ingest('test-node', { ...payload, deviceId: 'test-node' }));
 });
 test('config waits for the correct node ACK, then manual actuator command applies', async () => {
-  const auth = await login();
+  const auth = await login('operator');
   const result = await request(auth, '/devices/node-01/config', 'PATCH', { mode: 'MANUAL', fanOn: 30, fanOff: 28, temperatureAlert: 35 });
   assert.equal(result.status, 202);
   assert.equal((await application.iot.device('node-01')).config.mode, 'AUTO');
@@ -89,19 +89,19 @@ test('config waits for the correct node ACK, then manual actuator command applie
   assert.equal((await application.iot.device('node-01')).reported_state.fan, true);
 });
 test('concurrent command requests yield one pending command and one conflict', async () => {
-  const auth = await login();
+  const auth = await login('operator');
   const results = await Promise.all([true, false].map(value => request(auth, '/devices/node-01/commands', 'POST', { actuator: 'fan', value })));
   assert.deepEqual(results.map(r => r.status).sort(), [202, 409]);
   const accepted = results.find(r => r.status === 202);
   await application.iot.acknowledge('node-01', { commandId: accepted.body.id, status: 'applied' });
 });
 test('unsupported actuators and invalid thresholds are rejected', async () => {
-  const auth = await login();
-  assert.equal((await request(auth, '/devices/node-01/commands', 'POST', { actuator: 'light', value: true })).status, 400);
+  const auth = await login('operator');
+  assert.equal((await request(auth, '/devices/node-02/commands', 'POST', { actuator: 'fan', value: true })).status, 400);
   assert.equal((await request(auth, '/devices/node-01/config', 'PATCH', { mode: 'AUTO', fanOn: 25, fanOff: 30, temperatureAlert: 35 })).status, 400);
 });
 test('offline nodes reject commands and late ACK does not apply an expired command', async () => {
-  const auth = await login(); await application.iot.pause('node-01', true);
+  const auth = await login('operator'); await application.iot.pause('node-01', true);
   assert.equal((await request(auth, '/devices/node-01/commands', 'POST', { actuator: 'fan', value: false })).status, 409);
   await application.iot.pause('node-01', false);
   const cmd = await request(auth, '/devices/node-01/commands', 'POST', { actuator: 'fan', value: false }); assert.equal(cmd.status, 202);
@@ -120,7 +120,7 @@ test('user disable revokes MongoDB sessions; admin cannot disable itself', async
 });
 test('device lock rejects ingestion and cancels the pending command', async () => {
   const auth = await login();
-  const cmd = await request(auth, '/devices/node-01/commands', 'POST', { actuator: 'fan', value: true }); assert.equal(cmd.status, 202);
+  const operator=await login('operator');const cmd = await request(operator, '/devices/node-01/commands', 'POST', { actuator: 'fan', value: true }); assert.equal(cmd.status, 202);
   assert.equal((await request(auth, '/devices/node-01/lifecycle', 'POST', { state: 'locked' })).status, 200);
   assert.equal((await application.models.Command.findById(cmd.body.id)).status, 'cancelled');
   await assert.rejects(application.iot.ingest('node-01', { deviceId: 'node-01', bootId: 'blocked', seq: 1, timestamp: new Date().toISOString(), readings: { temperature: 29, humidity: 65 } }));
@@ -139,4 +139,19 @@ test('MongoDB records and authenticated sessions survive application restart', a
   assert.equal((await request(auth, '/devices')).status, 200);
   assert.equal((await application.iot.device('node-01')).lifecycle, 'locked');
   assert.equal(await application.models.Telemetry.countDocuments({ _id: { $in: savedIds } }), savedIds.length);
+});
+
+test('remote voice channel preserves permissions, Manual requirement and audit attribution', async()=>{
+  await application.models.User.updateOne({_id:'user-viewer'},{$set:{status:'active'}});
+  const operator=await login('operator'),viewer=await login('viewer');
+  const original=await application.iot.device('node-01');
+  await application.models.Device.create({_id:'remote-api-node',name:'Remote API node',profile:'climate',location:'Lab',owner_id:'user-operator',home_id:original.home_id,lifecycle:'active',last_seen:new Date(),config:{...original.config,mode:'AUTO'}});
+  const path='/devices/remote-api-node';
+  const immediate=await request(operator,path+'/commands','POST',{actuator:'fan',value:true,channel:'voice'});assert.equal(immediate.status,202);await application.iot.acknowledge('remote-api-node',{commandId:immediate.body.id,status:'applied',state:{fan:true}});
+  assert.equal((await request(viewer,path+'/commands','POST',{actuator:'fan',value:true,channel:'voice'})).status,403);
+  assert.equal((await request(operator,path+'/commands','POST',{actuator:'buzzer',value:true,channel:'gas_rule'})).status,400);
+  const config=await request(operator,path+'/config','PATCH',{mode:'MANUAL',channel:'voice'});assert.equal(config.status,202);assert.equal(config.body.source,'voice');
+  await application.iot.acknowledge('remote-api-node',{commandId:config.body.id,status:'applied',state:{mode:'MANUAL'}});
+  const sent=await request(operator,path+'/commands','POST',{actuator:'fan',value:true,channel:'voice'});assert.equal(sent.status,202);assert.equal(sent.body.source,'voice');assert.equal(sent.body.actor_id,'user-operator');assert.deepEqual(sent.body.payload,{actuator:'fan',value:true});
+  assert.ok(await application.models.AuditLog.exists({action:'device.voice_actuator',actor_id:'user-operator',target:'remote-api-node'}));
 });

@@ -50,7 +50,7 @@ export async function createApplication(overrides = {}) {
   };
   const sessionStore = MongoStore.create({ client: mongoose.connection.getClient(), dbName: config.dbName, collectionName: 'sessions', stringify: false, autoRemove: 'disabled', ttl: 8 * 3600 });
   sessionStore.on('error', () => console.warn('MongoDB session store đang mất kết nối.'));
-  const ai = await createAI({notify,enabled:config.aiEnabled});
+  const ai = await createAI({notify,enabled:config.aiEnabled,loginSeed:config.loginSeed});
   const iot = createIoT({ demo: config.demo, notify, mqttOptions: config.mqtt, onReading:id=>ai.enqueue(id) });
   const socketHeartbeat = setInterval(() => {
     for (const client of sockets.clients) {
@@ -73,7 +73,7 @@ export async function createApplication(overrides = {}) {
     const connected = mongoose.connection.readyState === 1;
     res.status(connected ? 200 : 503).json({ ok: connected, database: 'mongodb' });
   });
-  app.get('/api/public-config', (req, res) => res.json({ demo: config.demo, name: 'NODO Admin' }));
+  app.get('/api/public-config', (req, res) => res.json({ demo: config.demo, quickLogin: config.quickLogin, name: 'NODO Admin' }));
 
   app.use('/api/auth', authRoutes);
   app.use('/api', authMiddleware, csrfMiddleware);

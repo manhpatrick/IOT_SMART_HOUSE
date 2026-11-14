@@ -2,7 +2,9 @@
 
 Quản lý nhiều nhà → nhiều phòng → nhiều node. **Admin** giám sát hệ thống, quản lý tài khoản/vòng đời thiết bị. **Operator là chủ nhà**, tự quản lý phòng, nhận thiết bị, chỉnh ngưỡng và mời viewer. **Viewer** chỉ xem các nhà đã tham gia. Hai profile ESP32: **môi trường (DHT11/DHT22, quạt/còi)** và **ánh sáng (LDR, LED)**.
 
-Giao diện admin tại `/`; operator/viewer tại **`/app`**, tối ưu điện thoại và có thể cài dạng PWA. Hướng dẫn [nhà/phòng, phân quyền, nhận thiết bị, app và triển khai HTTPS](docs/HOMES-AND-MOBILE.md); bảng [xử lý lỗi/mất kết nối/dữ liệu cũ](docs/FAILURE-HANDLING.md). **Trạng thái bàn giao và việc còn thiếu:** [CURRENT-STATUS.md](docs/CURRENT-STATUS.md).
+Giao diện web desktop: admin tại `/`, operator/viewer tại **`/app`**. Nút Đăng xuất ở header hủy phiên server và về trang login. Nhóm đã bỏ giao diện mobile/cài app PWA; micro và điều khiển từ xa vẫn dùng trên web. Hướng dẫn [nhà/phòng, phân quyền và nhận thiết bị](docs/HOMES-AND-MOBILE.md); bảng [xử lý lỗi/mất kết nối/dữ liệu cũ](docs/FAILURE-HANDLING.md). **Trạng thái bàn giao và việc còn thiếu:** [CURRENT-STATUS.md](docs/CURRENT-STATUS.md).
+
+Operator có trang riêng **`/app#control`** cho manual và micro tiếng Việt, xem trước/xác nhận trước khi gửi lệnh. Trang thiết bị chỉ chỉnh ngưỡng/xem số đo. [Cách dùng và giới hạn voice](docs/REMOTE-CONTROL.md).
 
 **Express 5 + MongoDB/Mongoose + HTML/JavaScript + Tailwind 4 + MQTT + WebSocket.** User, thiết bị, telemetry, lệnh, cảnh báo, audit và session đều lưu trong MongoDB. Khi `DEMO_MODE=true`, hai node được giả lập, dữ liệu vẫn lưu vào MongoDB thật.
 
@@ -144,13 +146,15 @@ Xem [nhà/phòng và app](docs/HOMES-AND-MOBILE.md), [xử lý lỗi](docs/FAILU
 
 ## Nối ESP32 thật
 
-Phạm vi demo dự kiến dùng **một ESP32 thật**. Mục 4.2 đề bài yêu cầu ít nhất một thiết bị vật lý; hai node với nhóm bốn người là **khuyến nghị**, không phải bắt buộc. Đã nhận [firmware nền DHT11 + MQ-2 + LDR](firmware/README.md); giao thức còn khác BE và chưa có bằng chứng compile/board thật. Xem [review và các phần cần sửa](firmware/REVIEW.md). [Ba hướng nâng cao Docker, AI và realtime](docs/ADVANCED-DIRECTIONS.md); implementation AI hiện tại là Elman RNN, không phải LSTM. Profile gộp nhiều cảm biến/đầu ra trên một ESP32 cần mở rộng đồng bộ, hiện chưa có trong backend.
+Phạm vi demo dự kiến dùng **một ESP32 thật**. Mục 4.2 đề bài yêu cầu ít nhất một thiết bị vật lý; hai node với nhóm bốn người là **khuyến nghị**, không phải bắt buộc. Đã nhận [firmware nền DHT11 + MQ-2 + LDR](firmware/README.md); giao thức còn khác BE và chưa có bằng chứng compile/board thật. Xem [review và các phần cần sửa](firmware/REVIEW.md). [Ba hướng nâng cao Docker, AI và realtime](docs/ADVANCED-DIRECTIONS.md); implementation AI hiện tại là Elman RNN, không phải LSTM. Profile climate đã nhận DHT + MQ-2 + LDR và điều khiển quạt/còi/đèn trên cùng ESP32; không đổi Device ID hay xóa DB. Xem [một node đa cảm biến](docs/ONE-NODE-MULTISENSOR.md). Firmware legacy vẫn cần sửa theo MQTT-CONTRACT và kiểm chứng board thật.
 
 Bàn giao cho hai bạn phần cứng: [hướng dẫn kết nối, broker và firmware](docs/HARDWARE-INTEGRATION.md), [40 kịch bản thử nghiệm](docs/TEST-PLAN.md), [JSON/topic MQTT](docs/MQTT-CONTRACT.md). Có mẫu `deployment/mosquitto-lab.conf.example` và script `npm.cmd run mqtt:sample -- hw-climate-01 climate` để in gói thử có timestamp hiện tại.
 
 `DEMO_MODE=false`; cấu hình MQTT_URL, MQTT_USERNAME, MQTT_PASSWORD, MQTT_DYNAMIC_SECURITY. Dùng Mosquitto TLS và ACL riêng mỗi node. Adapter có cấp role/client và thu hồi kết nối bằng Dynamic Security; phần broker/ESP32 thật vẫn cần kiểm thử như trong MQTT contract. Quy tắc Auto chạy ở ESP32; backend lưu/gửi cấu hình và chỉ áp dụng khi nhận ACK.
 
 ## Kiểm thử
+
+Kịch bản thi một ESP32: [DEMO-RUNBOOK](docs/DEMO-RUNBOOK.md), luồng 15–20 phút theo nghiệp vụ hiện tại; [TEST-PLAN](docs/TEST-PLAN.md) và [bảng ghi kết quả 50 ca](docs/DEMO-RESULTS.csv). Không chọn Auto/Manual, không demo app mobile; phân biệt phần cứng thật và mô phỏng.
 
 ```powershell
 npm.cmd test

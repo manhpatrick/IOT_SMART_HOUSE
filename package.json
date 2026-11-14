@@ -26,10 +26,11 @@
     "migrate:sqlite": "node --env-file-if-exists=.env database/migrate-sqlite.js",
     "build": "tailwindcss -i ./frontend/styles.css -o ./frontend/public/assets/app.css --minify",
     "css:watch": "tailwindcss -i ./frontend/styles.css -o ./frontend/public/assets/app.css --watch",
-    "test": "node --test --test-concurrency=1 tests/api.test.js tests/homes.test.js tests/migration.test.js tests/ai.test.js tests/ai-api.test.js tests/gas.test.js",
+    "test": "node --test --test-concurrency=1 tests/api.test.js tests/homes.test.js tests/migration.test.js tests/ai.test.js tests/ai-api.test.js tests/gas.test.js tests/multisensor.test.js",
     "test:ui": "node tests/browser.mjs",
     "test:home-ui": "node tests/home-browser.mjs",
     "test:gas-ui": "node tests/gas-browser.mjs",
+    "test:remote-ui": "node tests/remote-browser.mjs",
     "test:ai-ui": "node tests/ai-browser.mjs"
   },
   "dependencies": {

@@ -18,7 +18,7 @@ export async function seedDatabase({ demo = true, adminEmail, adminPassword } = 
     { _id: 'user-viewer', name: 'Trần Hoàng Nam', email: 'viewer@nodo.local', password_hash: await bcrypt.hash('Viewer@12345', 12), role: 'viewer' },
   ]);
   for (const [id, name, profile] of [['node-01', 'Trạm môi trường', 'climate'], ['node-02', 'Trạm chiếu sáng', 'lighting']]) {
-    await Device.create({ _id: id, name, profile, location: 'Phòng thực hành A.201', owner_id: 'user-operator', viewer_ids: ['user-viewer'], lifecycle: 'active', mqtt_username: id, config: defaults(profile), last_seen: new Date(), reported_state: profile === 'climate' ? { fan: false, buzzer: false, mode: 'AUTO' } : { light: true, mode: 'AUTO' } });
+    await Device.create({ _id: id, name, profile, location: 'Phòng thực hành A.201', owner_id: 'user-operator', viewer_ids: ['user-viewer'], lifecycle: 'active', mqtt_username: id, config: defaults(profile), last_seen: new Date(), reported_state: profile === 'climate' ? { fan: false, buzzer: false, light: true, mode: 'AUTO' } : { light: true, mode: 'AUTO' } });
     await DeviceEvent.create([
       { device_id: id, from_state: null, to_state: 'registered', actor_name: 'Hệ thống' },
       { device_id: id, from_state: 'registered', to_state: 'provisioned', actor_name: 'Hệ thống' },
@@ -30,7 +30,8 @@ export async function seedDatabase({ demo = true, adminEmail, adminPassword } = 
       readings.push({ device_id: id, source: 'demo', boot_id: 'seed', seq: 143 - i, recorded_at: ts, received_at: ts,
         temperature: profile === 'climate' ? +(27.5 + 2.7 * Math.sin((143 - i) / 15)).toFixed(1) : null,
         humidity: profile === 'climate' ? +(65 + 6 * Math.cos(i / 18)).toFixed(1) : null,
-        light_percent: profile === 'lighting' ? Math.round(48 + 30 * Math.sin(i / 20)) : null,
+        light_percent: Math.round(48 + 30 * Math.sin(i / 20)),
+        gas_raw: profile === 'climate' ? Math.round(650 + 90 * Math.sin(i / 23)) : null,
       });
     }
     await Telemetry.insertMany(readings);

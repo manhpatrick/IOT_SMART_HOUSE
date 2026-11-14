@@ -1,8 +1,10 @@
 # MQTT contract — ESP32 ↔ Backend
 
-Phạm vi vật lý của nhóm: **một ESP32**. Backend hiện hỗ trợ hai profile độc lập: `climate` (nhiệt độ/độ ẩm + quạt/còi) và `lighting` (ánh sáng + LED). Các ví dụ node-01/node-02 dưới đây minh họa hai profile, không bắt buộc hai board. Node ghép MQTTX hiện dùng `hw-climate-01`, profile climate.
+**Chính sách điều khiển mới:** bật/tắt từ xa và tự động cùng hoạt động, không chọn mode loại trừ. Envelope thêm automaticEnabled=true; lệnh actuator tay có manualOverrideSeconds=300 và safetyPriority=true. Cảnh báo ưu tiên, sau lease quay về ngưỡng tự động. Trường mode trong ví dụ cũ là dữ liệu tương thích, không dùng để ngừng rule local. Firmware cần cập nhật theo [HYBRID-CONTROL](HYBRID-CONTROL.md); sketch legacy chưa triển khai.
 
-Firmware nhóm cung cấp có cả DHT11/MQ-2/LDR/LED/quạt/còi trên một board. Profile gộp và trường gas chưa có ở BE; firmware còn dùng giao thức cũ. Xem [review firmware](../firmware/REVIEW.md) trước khi nạp/ghép. Không có cửa hoặc servo trong phạm vi này.
+Phạm vi vật lý của nhóm: **một ESP32**. Profile `climate` nhận chung DHT (nhiệt độ/độ ẩm), LDR (ánh sáng) và MQ-2 (gas), điều khiển quạt/còi/đèn. Profile `lighting` riêng chỉ LDR/LED vẫn giữ để tương thích. Các ví dụ node-01/node-02 minh họa loại node, không bắt buộc hai board. Node ghép MQTTX hiện dùng `hw-climate-01`, profile climate. Chi tiết [một node đa cảm biến](ONE-NODE-MULTISENSOR.md).
+
+Firmware nhóm cung cấp có cả DHT11/MQ-2/LDR/LED/quạt/còi trên một board. BE/FE đã nhận đủ nhóm cảm biến trên climate; firmware còn dùng giao thức cũ và phải sửa transport/ACK trước khi ghép. Xem [review firmware](../firmware/REVIEW.md). Không có cửa hoặc servo trong phạm vi này.
 
 ## Topic
 
@@ -26,14 +28,16 @@ ESP32 chỉ publish telemetry/status/ack của chính mình; chỉ subscribe com
   "bootId": "random-id-for-this-boot",
   "seq": 1,
   "timestamp": "2026-11-06T08:00:00.000Z",
-  "readings": { "temperature": 29.2, "humidity": 65.1 },
-  "state": { "fan": false, "buzzer": false, "mode": "AUTO" }
+  "readings": { "temperature": 29.2, "humidity": 65.1, "lightPercent": 28, "gasRaw": 650 },
+  "state": { "fan": false, "buzzer": false, "light": true, "mode": "AUTO" }
 }
 ```
 
 `temperature`: °C, [-40,80]. `humidity`: %RH, [0,100]. Climate phải có cả hai trường. Không gửi giá trị đọc lỗi như NaN hoặc số giả; gửi trạng thái lỗi và thử đọc lại.
 
 Climate nhận thêm `readings.gasRaw` tùy chọn: số nguyên ADC 0–4095. Backend lưu gas_raw, cảnh báo gas và tự gửi lệnh buzzer có ACK; cấu hình thêm gasThreshold/gasClearThreshold. Chi tiết giao thức, hysteresis và thử MQTTX tại [GAS-ALARM](GAS-ALARM.md). Không gửi MQ-2 raw dưới dạng ppm và không gửi giá trị 0 thay cho cảm biến lỗi.
+
+Climate cũng nhận `readings.lightPercent` tùy chọn [0,100], lớn hơn là sáng hơn; state có `light`. Board ba cảm biến gửi đủ bốn chỉ số trong cùng readings. Trường tùy chọn giúp tương thích payload DHT cũ; thiếu ánh sáng/gas không được diễn giải là 0 hoặc mới. Một node dùng chung house/room cho tất cả cảm biến.
 
 ## Telemetry lighting
 
@@ -83,7 +87,7 @@ BE publish không retained:
 }
 ```
 
-Các actuator: climate = `fan`, `buzzer`; lighting = `light`. Điều khiển trực tiếp chỉ khi cấu hình `MANUAL`. Dùng lệnh đặt trạng thái cụ thể `true/false` để dễ idempotent, không dùng lệnh toggle.
+Các actuator: climate = `fan`, `buzzer`, `light`; lighting = `light`. Điều khiển trực tiếp chỉ khi cấu hình `MANUAL`. Dùng lệnh đặt trạng thái cụ thể `true/false` để dễ idempotent, không dùng lệnh toggle. Khi gas còn cảnh báo không cho tắt còi thủ công.
 
 ## Cấu hình
 
@@ -92,7 +96,7 @@ Các actuator: climate = `fan`, `buzzer`; lighting = `light`. Điều khiển tr
   "commandId": "uuid",
   "deviceId": "node-01",
   "kind": "config",
-  "payload": { "mode": "AUTO", "fanOn": 30, "fanOff": 28, "temperatureAlert": 35 },
+  "payload": { "mode": "AUTO", "fanOn": 30, "fanOff": 28, "temperatureAlert": 35, "lightOn": 30, "lightOff": 45, "gasThreshold": 1200, "gasClearThreshold": 1000 },
   "timestamp": "2026-11-06T08:00:00.000Z",
   "expiresAt": "2026-11-06T08:00:15.000Z"
 }
@@ -100,7 +104,7 @@ Các actuator: climate = `fan`, `buzzer`; lighting = `light`. Điều khiển tr
 
 Lighting payload: `{ "mode": "AUTO", "lightOn": 30, "lightOff": 45 }`.
 
-- Climate AUTO: nhiệt độ ≥ fanOn thì bật quạt; ≤ fanOff thì tắt; giữa hai ngưỡng giữ trạng thái. Nhiệt độ ≥ temperatureAlert bật còi.
+- Climate AUTO: nhiệt độ ≥ fanOn thì bật quạt; ≤ fanOff thì tắt; giữa hai ngưỡng giữ trạng thái. Đèn bật khi lightPercent ≤ lightOn, tắt khi ≥ lightOff. Phối hợp còi nhiệt/gas theo GAS-ALARM; gas ưu tiên cả Manual/Auto.
 - Lighting AUTO: sáng ≤ lightOn thì bật LED; ≥ lightOff thì tắt; giữa hai ngưỡng giữ trạng thái.
 - MANUAL: giữ trạng thái đầu ra đã được yêu cầu qua lệnh.
 - Lưu cấu hình vào NVS nếu cần giữ qua lần reset; vẫn chạy Auto khi mất server.

@@ -67,6 +67,8 @@ export function createBroker({ demo, options, notify, onTelemetry, onAck, onStat
       await client.publishAsync(`${prefix}/${command.device_id}/${command.kind === 'config' ? 'config' : 'command'}`, JSON.stringify({
         commandId: command._id, deviceId: command.device_id, kind: command.kind, payload: command.payload,
         timestamp: command.created_at, expiresAt: command.expires_at,
+        automaticEnabled: true,
+        ...(command.kind==='actuator'&&['user','voice'].includes(command.source)?{manualOverrideSeconds:300,safetyPriority:true}:{}),
       }), { qos: 1, retain: false });
     },
     async provision(id, password) {

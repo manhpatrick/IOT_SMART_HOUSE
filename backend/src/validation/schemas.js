@@ -32,6 +32,6 @@ export const workspaceSchema = z.object({
 
 export function configSchema(profile) {
   return profile === 'climate'
-    ? z.object({ mode: z.enum(['AUTO', 'MANUAL']), fanOn: z.number().min(15).max(60), fanOff: z.number().min(10).max(55), temperatureAlert: z.number().min(20).max(75), gasThreshold: z.number().int().min(1).max(4095).default(1200), gasClearThreshold: z.number().int().min(0).max(4094).default(1000) }).strict().refine(v => v.fanOff < v.fanOn && v.temperatureAlert >= v.fanOn, 'Cần fanOff < fanOn ≤ temperatureAlert.').refine(v=>v.gasClearThreshold<v.gasThreshold,'Ngưỡng kết thúc gas phải nhỏ hơn ngưỡng báo động.')
+    ? z.object({ mode: z.enum(['AUTO', 'MANUAL']), fanOn: z.number().min(15).max(60), fanOff: z.number().min(10).max(55), temperatureAlert: z.number().min(20).max(75), gasThreshold: z.number().int().min(1).max(4095).default(1200), gasClearThreshold: z.number().int().min(0).max(4094).default(1000), lightOn: z.number().min(0).max(99).default(30), lightOff: z.number().min(1).max(100).default(45) }).strict().refine(v => v.fanOff < v.fanOn && v.temperatureAlert >= v.fanOn, 'Cần fanOff < fanOn ≤ temperatureAlert.').refine(v=>v.gasClearThreshold<v.gasThreshold,'Ngưỡng kết thúc gas phải nhỏ hơn ngưỡng báo động.').refine(v => v.lightOn < v.lightOff, 'Ngưỡng bật đèn phải nhỏ hơn ngưỡng tắt.')
     : z.object({ mode: z.enum(['AUTO', 'MANUAL']), lightOn: z.number().min(0).max(99), lightOff: z.number().min(1).max(100) }).strict().refine(v => v.lightOn < v.lightOff, 'Ngưỡng bật phải nhỏ hơn ngưỡng tắt.');
 }

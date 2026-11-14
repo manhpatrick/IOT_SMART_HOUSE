@@ -18,6 +18,8 @@ try {
   async function waitDevice(predicate) {const end=Date.now()+12000;while(Date.now()<end){const d=await (await context.request.get(base+'/api/devices/node-01')).json();if(predicate(d))return;await new Promise(r=>setTimeout(r,150));}throw new Error('Device did not reach expected state');}
   await login(page,'Operator');await page.getByRole('heading',{name:'Nhà của tôi',exact:true}).waitFor();
   await waitDevice(d=>d.connection==='online');await page.getByRole('button',{name:'Làm mới',exact:true}).click();
+  await page.waitForFunction(()=>Chart.getChart(document.querySelector('#home-chart'))?.data.datasets.length===4);
+  assert.equal(await page.locator('[data-device="node-01"] .reading-label').filter({hasText:'Độ sáng tương đối'}).count(),1);
   await page.screenshot({path:'.artifacts/home-operator-desktop.png',fullPage:true,animations:'disabled'});
   await page.getByRole('button',{name:'＋ Thêm phòng',exact:true}).click();await page.locator('#room-form [name="name"]').fill('Phòng đọc sách');
   await page.locator('#room-form [type="submit"]').click();await page.locator('#home-dialog').waitFor({state:'hidden'});
@@ -25,11 +27,12 @@ try {
   const room=page.locator('.room-card').filter({hasText:'Phòng đọc sách'});await room.getByRole('button',{name:'Đổi tên',exact:true}).click();
   await page.locator('#room-form [name="name"]').fill('Phòng học');await page.locator('#room-form [type="submit"]').click();await page.locator('#home-dialog').waitFor({state:'hidden'});
   await page.locator('#side-nav').getByRole('link',{name:'Thiết bị',exact:true}).click();
-  const node=page.locator('[data-device="node-01"]');await node.getByRole('button',{name:'Cấu hình & chế độ',exact:true}).click();
-  await page.locator('#config-form [name="mode"]').selectOption('MANUAL');await page.locator('#config-form [type="submit"]').click();
-  await page.locator('#home-dialog').waitFor({state:'hidden'});await waitDevice(d=>d.config.mode==='MANUAL');
-  await page.getByRole('button',{name:'Làm mới',exact:true}).click();await node.getByRole('switch',{name:'Quạt · Trạm môi trường',exact:true}).click();await waitDevice(d=>d.reported_state.fan===true);
-  await page.getByRole('button',{name:'Làm mới',exact:true}).click();await node.getByRole('button',{name:'Lịch sử ↗',exact:true}).click();
+  const node=page.locator('[data-device="node-01"]');await node.getByRole('button',{name:'Chỉnh ngưỡng cảm biến',exact:true}).click();
+  assert.equal(await page.locator('#config-form [name="mode"]').count(),0);assert.equal(await page.locator('#config-form [name="lightOn"]').count(),1);assert.equal(await page.locator('#config-form [name="lightOff"]').count(),1);await page.locator('#config-form [name="fanOn"]').fill('31');await page.locator('#config-form [type="submit"]').click();
+  await page.locator('#home-dialog').waitFor({state:'hidden'});await waitDevice(d=>d.config.fanOn===31);
+  await page.goto(base+'/app#control');await page.getByRole('heading',{name:'Điều khiển từ xa',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Bật quạt',exact:true}).click();await waitDevice(d=>d.reported_state.fan===true);
+  await page.goto(base+'/app#devices');await node.getByRole('button',{name:'Lịch sử ↗',exact:true}).click();
   await page.locator('#history-chart').waitFor();const download=page.waitForEvent('download');await page.getByRole('button',{name:'Tải CSV',exact:true}).click();assert.equal((await download).suggestedFilename(),'nodo-node-01.csv');
   await page.getByRole('button',{name:'Đóng',exact:true}).click();
   // Onboarding a real device uses the same UI; this test uses simulated provisioning.
@@ -42,24 +45,24 @@ try {
   await page.locator('#claim-form [name="deviceId"]').fill('mobile-claim');await page.locator('#claim-form [name="code"]').fill(code.code);await page.locator('#claim-form [type="submit"]').click();
   await page.locator('#home-dialog').waitFor({state:'hidden'});await page.locator('[data-device="mobile-claim"]').waitFor();
   // Invite a new viewer, who registers then accepts on their own session.
-  const guestContext=await browser.newContext({viewport:{width:390,height:844}}),guest=await guestContext.newPage();guest.on('pageerror',error=>errors.push(error.message));
+  const guestContext=await browser.newContext({viewport:{width:1440,height:1000}}),guest=await guestContext.newPage();guest.on('pageerror',error=>errors.push(error.message));
   await guest.goto(base+'/login');await guest.getByRole('button',{name:'Chưa có tài khoản? Đăng ký',exact:true}).click();
   await guest.locator('#login-form [name="name"]').fill('Người xem mới');await guest.locator('#login-form [name="email"]').fill('guest@example.com');await guest.locator('#login-form [name="password"]').fill('Guest@12345');await guest.locator('#login-form [name="role"]').selectOption('viewer');
   await guest.getByRole('button',{name:'Tạo tài khoản',exact:true}).click();await guest.getByRole('heading',{name:'Chưa có ngôi nhà nào',exact:true}).waitFor();
   await page.goto(base+'/app#members');await page.getByRole('button',{name:'＋ Mời viewer',exact:true}).click();await page.locator('#invite-form [name="email"]').fill('guest@example.com');await page.locator('#invite-form [type="submit"]').click();
   await page.locator('#invite-link').waitFor();const inviteURL=await page.locator('#invite-link').textContent();
   await guest.goto(inviteURL);await guest.getByRole('button',{name:'Chấp nhận lời mời',exact:true}).click();await guest.locator('#home-dialog').waitFor({state:'hidden'});await guest.getByRole('heading',{name:'Nhà của tôi',exact:true}).waitFor();
-  assert.equal(await guest.getByRole('switch').count(),0);assert.equal(await guest.getByRole('button',{name:'Cấu hình & chế độ',exact:true}).count(),0);
+  assert.equal(await guest.getByRole('switch').count(),0);assert.equal(await guest.getByRole('button',{name:'Chỉnh ngưỡng cảm biến',exact:true}).count(),0);
   assert.equal(await guest.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Viewer mobile overflow');
   await guest.screenshot({path:'.artifacts/home-viewer-mobile.png',fullPage:true,animations:'disabled'});
   await page.getByRole('button',{name:'Đóng',exact:true}).click();await page.getByRole('button',{name:'Làm mới',exact:true}).click();
   const guestRow=page.locator('.event-row').filter({hasText:'guest@example.com'}).filter({has:page.getByRole('button',{name:'Thu hồi',exact:true})});
   await guestRow.getByRole('button',{name:'Thu hồi',exact:true}).click();await page.getByRole('button',{name:'Xác nhận',exact:true}).click();
   await guest.getByRole('button',{name:'Làm mới',exact:true}).click();await guest.getByRole('heading',{name:'Chưa có ngôi nhà nào',exact:true}).waitFor();
-  await page.setViewportSize({width:390,height:844});await page.goto(base+'/app#overview');await page.getByRole('heading',{name:'Nhà của tôi',exact:true}).waitFor();
+  await page.setViewportSize({width:1440,height:1000});await page.goto(base+'/app#overview');await page.getByRole('heading',{name:'Nhà của tôi',exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Operator mobile overflow');
   await page.screenshot({path:'.artifacts/home-operator-mobile.png',fullPage:true,animations:'disabled'});
-  await page.evaluate(()=>navigator.serviceWorker.ready);const cacheBefore=await page.evaluate(async()=>{const keys=await caches.keys();const urls=[];for(const k of keys){for(const r of await (await caches.open(k)).keys())urls.push(new URL(r.url).pathname);}return urls;});
+  assert.equal(await page.locator('#mobile-nav,[data-action="install"],link[rel="manifest"]').count(),0);const cacheBefore=await page.evaluate(async()=>{const keys=await caches.keys();const urls=[];for(const k of keys){for(const r of await (await caches.open(k)).keys())urls.push(new URL(r.url).pathname);}return urls;});
   assert.ok(!cacheBefore.some(p=>p.startsWith('/api/')),'Private API data must never be cached');
   const commandsBefore=await application.models.Command.countDocuments();await context.setOffline(true);await page.locator('#connection-banner').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-write]:not(:disabled)').count(),0,'Writes disabled while offline');
@@ -67,7 +70,7 @@ try {
   await context.setOffline(false);await page.getByRole('button',{name:'Làm mới',exact:true}).click();await page.locator('#connection-banner').waitFor({state:'hidden'});
   assert.equal(await application.models.Command.countDocuments(),commandsBefore,'Reconnect must not replay manual commands');
   assert.deepEqual(errors,[]);
-  console.log('Home browser QA passed: operator rooms, config/actuator ACK, CSV, claiming, registration, invitation, viewer read-only, access revocation, mobile layout, offline/reconnect, PWA cache privacy.');
+  console.log('Home browser QA passed: operator rooms, config/actuator ACK, CSV, claiming, registration, invitation, viewer read-only, access revocation, desktop navigation, offline/reconnect, no install UI and cache privacy.');
 } catch(error) {
   const page=browser?.contexts()[0]?.pages()[0];if(page){await page.screenshot({path:'.artifacts/home-browser-failure.png',fullPage:true});console.error('Visible errors:',await page.locator('.home-form-error:visible').allTextContents());}throw error;
 } finally {if(browser)await browser.close();await application.close();await database.stop();}

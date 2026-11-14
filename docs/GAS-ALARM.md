@@ -1,6 +1,6 @@
 # Gas MQ-2 và còi báo động
 
-Hỗ trợ trên **một node climate**: DHT nhiệt độ/độ ẩm và trường gasRaw tùy chọn. Chưa gộp LDR/LED vào climate. Gas là ADC thô 0–4095, chưa phải ppm và chưa phải thiết bị báo gas được chứng nhận.
+Hỗ trợ trên **một node climate**: DHT nhiệt độ/độ ẩm, gasRaw và lightPercent trên cùng ESP32; có quạt/còi/đèn. Xem [ONE-NODE-MULTISENSOR](ONE-NODE-MULTISENSOR.md). Gas là ADC thô 0–4095, chưa phải ppm và chưa phải thiết bị báo gas được chứng nhận.
 
 ## Dữ liệu và ngưỡng
 

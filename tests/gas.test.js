@@ -27,7 +27,7 @@ test('gas rule drives buzzer with ACK in Manual, blocks manual off and avoids co
  const cmd=await waitFor(()=>app.models.Command.findOne({device_id:'node-01',source:'gas_rule','payload.value':true}).lean());
  assert.equal(cmd.actor_id,null);assert.deepEqual(cmd.payload,{actuator:'buzzer',value:true});
  await waitFor(async()=> (await app.iot.device('node-01')).reported_state.buzzer===true);
- const admin=await auth('admin');const off=await request(admin,'/devices/node-01/commands','POST',{actuator:'buzzer',value:false});assert.equal(off.status,409);
+ const admin=await auth('operator');const off=await request(admin,'/devices/node-01/commands','POST',{actuator:'buzzer',value:false});assert.equal(off.status,409);
  const viewer=await auth('viewer');assert.equal((await request(viewer,'/devices/node-01/config','PATCH',{gasThreshold:1700,gasClearThreshold:1100})).status,403);
  assert.equal((await request(viewer,'/devices/node-01/commands','POST',{actuator:'buzzer',value:true})).status,403);
  await ingest(1800);assert.equal(await app.models.Command.countDocuments({device_id:'node-01',source:'gas_rule','payload.value':true}),1);

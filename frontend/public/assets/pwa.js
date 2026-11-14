@@ -1,9 +1,8 @@
-let installPrompt;
-window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; });
-window.nodoInstall = async () => {
-  if (installPrompt) { await installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; return; }
-  const text = !window.isSecureContext ? 'Để cài app trên điện thoại, mở NODO bằng địa chỉ HTTPS. HTTP trong mạng LAN vẫn dùng được giao diện web.' : 'Android: mở menu trình duyệt → Cài ứng dụng / Thêm vào màn hình chính. iPhone: mở Safari → Chia sẻ → Thêm vào Màn hình chính.';
-  const container = document.querySelector('#home-toasts');
-  if (container) { const el = document.createElement('div'); el.className = 'home-toast'; el.textContent = text; container.append(el); setTimeout(() => el.remove(),12000); }
-};
-if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js').catch(() => {});
+// Retire only NODO's previous PWA; no new worker is registered.
+(async()=>{try{
+ if('serviceWorker' in navigator)for(const r of await navigator.serviceWorker.getRegistrations()){
+  const w=r.active||r.waiting||r.installing;
+  if(w&&new URL(w.scriptURL).origin===location.origin&&new URL(w.scriptURL).pathname==='/sw.js')await r.unregister();
+ }
+ if('caches' in window)for(const key of await caches.keys())if(key.startsWith('nodo-shell-'))await caches.delete(key);
+}catch{}})();

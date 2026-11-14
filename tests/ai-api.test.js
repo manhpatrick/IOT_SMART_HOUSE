@@ -1,3 +1,4 @@
+import {ensureLoginBootstrap} from '../backend/src/services/login-bootstrap.service.js';
 import {test,before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {createApplication} from '../backend/src/app.js';
@@ -20,7 +21,7 @@ test('a real worker trains and persists a marked demo model without exposing its
   const response=await call(operator,'/ai/devices/node-01/train','POST',{confirmedNormal:true,includeDemo:true});assert.equal(response.status,202);
   let model;const deadline=Date.now()+15000;
   do{model=await app.models.AiModel.findById(response.body.id).lean();if(model.status!=='training')break;await new Promise(r=>setTimeout(r,100));}while(Date.now()<deadline);
-  assert.equal(model.status,'ready',model.error);assert.equal(model.data_source,'demo_or_mixed');assert.ok(model.report.test.temperature.mae>=0);
+  assert.equal(model.status,'ready',model.error);assert.equal(model.data_source,'demo_or_mixed');assert.ok(model.report.test.temperature.mae>=0);assert.ok(model.report.test_preview.length>0&&model.report.test_preview.length<=120);assert.ok(model.report.test_preview.every(p=>p.prediction.every(Number.isFinite)));
   assert.ok(!('artifact'in model));
   const api=await call(operator,'/ai/devices/node-01');assert.equal(api.body.model.status,'ready');assert.ok(!JSON.stringify(api.body).includes('"wx"'));
   const result=await app.ai.analyzeDevice('node-01');assert.ok(['normal','anomaly'].includes(result.status));
@@ -60,4 +61,15 @@ test('AI analysis failure does not break successful authentication',async()=>{
   const original=app.ai.recordLogin;app.ai.recordLogin=async()=>{throw new Error('Injected AI failure');};
   try {const result=await login('viewer');assert.equal(result.loginAnalysis.status,'unavailable');assert.equal((await call(result,'/devices')).status,200);}
   finally {app.ai.recordLogin=original;}
+});
+
+test('seed history is one-time, scoped and combines with real events without rewriting them',async()=>{
+ const before=await app.models.LoginEvent.countDocuments({user_id:'user-operator',source:'server'});
+ await Promise.all([ensureLoginBootstrap('user-operator'),ensureLoginBootstrap('user-operator')]);
+ assert.equal(await app.models.LoginEvent.countDocuments({user_id:'user-operator',source:'bootstrap'}),32);
+ await ensureLoginBootstrap('user-operator');assert.equal(await app.models.LoginEvent.countDocuments({user_id:'user-operator',source:'bootstrap'}),32);
+ assert.equal(await app.models.LoginEvent.countDocuments({user_id:'user-viewer',source:'bootstrap'}),0);
+ assert.equal(await app.models.LoginEvent.countDocuments({user_id:'user-operator',source:'server'}),before);
+ const history=await call(operator,'/ai/login-history');assert.notEqual(history.body.profile.status,'insufficient_data');assert.equal(history.body.events.some(e=>e.source==='bootstrap'),false);assert.ok(history.body.events.every(e=>e.user_name===operator.user.name));assert.equal(history.body.latest_evaluation.event_id,history.body.events[0].id);assert.equal(history.body.training.seed_events,32);assert.equal(history.body.profile.learning.hours.length,24);assert.equal(history.body.profile.learning.density.length,145);assert.equal(history.body.profile.learning.hours.reduce((n,h)=>n+h.seed+h.observed,0),history.body.profile.baseline_events);assert.equal(history.body.profile.learning.density[0].value,history.body.profile.learning.density[144].value);
+ assert.equal((await call(viewer,'/ai/login-example')).status,404);
 });

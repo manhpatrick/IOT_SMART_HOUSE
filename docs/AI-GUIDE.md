@@ -2,6 +2,16 @@
 
 ## Trạng thái và phạm vi
 
+**Biểu đồ học AI:** trong Kết quả & đánh giá của node, RNN có số cửa sổ Train/Validation/Test, loss theo epoch, dự báo so với số đo trên tập test độc lập (preview tối đa 120 điểm lưu trong report), MAE so với baseline và score/ngưỡng suy luận. KDE có nút Biểu đồ học đăng nhập: số mẫu từng giờ (sau lọc/khử trùng đúng như model), mật độ KDE trên chu kỳ 24 giờ và score/ngưỡng lưu của từng login thật. KDE không có loss/epoch; không trình bày như huấn luyện RNN. Dữ liệu chart được tổng hợp khi xem, không lưu cả đường KDE vào mỗi lần login. Model cũ chưa có test_preview dùng kết quả suy luận đã lưu; không có dữ liệu thì không tạo đường giả. Quyền xem vẫn theo nhà/tài khoản.
+
+**Giao diện lịch sử hiện tại:** chỉ hiển thị thời gian và tên/email người đăng nhập; các dòng bootstrap không được đưa vào bảng đăng nhập đã quan sát. Seed vẫn ở DB và dùng học cùng dữ liệu thật. Thẻ chính hiển thị giờ thường dùng và kết quả lưu của lần login thật gần nhất, không lấy đánh giá giờ hiện tại của profile để giả thành sự kiện mới. Nút Chi tiết đánh giá hiển thị user/thời điểm/algorithm/baseline_events/score/threshold từ LoginEvent.analysis. Event cũ thiếu đánh giá giữ nguyên, không phân loại lại rồi ghi đè lịch sử. KDE tính phân bố/ngưỡng từ lịch sử trước mỗi login, không có epoch train như RNN. RNN cảm biến vẫn train qua worker khi user bấm Huấn luyện, sau đó suy luận theo telemetry.
+
+**Chính sách seed hiện tại (thay phần ví dụ riêng trước đây):** Docker local bật `AI_LOGIN_SEED=true`. Mỗi operator/viewer được tạo 32 LoginEvent `source=bootstrap` trên 8 ngày trước, giờ 08:10/09:10/19:10/20:10, đúng một lần. Marker lưu trong Setting để restart không nhân bản; upsert ID cố định cho phép phục hồi nếu khởi tạo gián đoạn. Login thật vẫn `source=server`, được đánh giá cùng baseline rồi lưu sau đánh giá. Không có cơ chế giảm trọng số riêng; lịch sử 90 ngày và TTL 120 ngày vẫn áp dụng. Đây là lịch sử giả lập khởi tạo phục vụ đồ án, không phải quan sát người dùng. Báo cáo cần phân biệt nguồn seed và thực. Không seed telemetry, thiết bị, model RNN hoặc cảnh báo giả. Đã bỏ nút/API login-example. Lịch sử giao diện ghi nguồn Khởi tạo/Thực tế để tránh nhầm. `.env.example` để seed=false cho môi trường khác.
+
+**Cập nhật login:** bỏ điều kiện chờ 5 ngày. KDE bắt đầu đánh giá sơ bộ từ 6 mẫu giờ khác nhau, có thể chỉ trong một ngày; đăng nhập lặp cùng giờ vẫn chỉ một mẫu. Khi chỉ có một ngày, hiệu chỉnh leave-one-slot-out; nhiều ngày dùng leave-one-day-out. Dữ liệu ít được gắn preliminary, không coi là bằng chứng chắc chắn về thói quen. User có nút **Thử bằng dữ liệu mẫu** gọi /api/ai/login-example: minh họa giờ quen/giờ lạ ngay bằng synthetic, không ghi LoginEvent/AccountAlert/telemetry hoặc ảnh hưởng baseline thật. RNN cảm biến vẫn cần dữ liệu chuỗi đủ dài; thay đổi này chỉ dành cho mô hình giờ đăng nhập.
+
+Giá trị sử dụng: rule nhiệt/gas xử lý ngưỡng cụ thể; RNN bổ sung cảnh báo khi chuỗi nhiệt/ẩm lệch mẫu bình thường dù chưa vượt ngưỡng, để người vận hành kiểm tra môi trường/cảm biến. Đây không phải chẩn đoán hỏng. KDE đăng nhập cảnh báo giờ hiếm so với lịch sử cá nhân để chính chủ kiểm tra phiên; không phát hiện chắc chắn người lạ, không thay xác thực. Login dùng KDE, không dùng RNN. Model cảm biến tách theo node; lịch sử login tách theo user. Admin xem nhiều node không có nghĩa lấy chung một model/trộn chuỗi các node.
+
 Đã triển khai hai mô hình chạy cục bộ trong backend Node.js, không gọi API chatbot/AI bên ngoài:
 
 1. **Elman RNN** (tanh, linear output, BPTT + Adam) dự báo nhiệt độ/độ ẩm và chấm residual để phát hiện biến thiên bất thường. Đây là RNN thường, **không phải LSTM** trong đề xuất ban đầu. Huấn luyện chạy trong worker thread để không chặn MQTT/HTTP.
@@ -43,7 +53,7 @@ Huấn luyện một tác vụ cùng lúc, worker tối đa 256 MB và giới h�
 ## Giờ đăng nhập: dữ liệu, học và cảnh báo
 
 - Server ghi thời điểm sau khi password/user hợp lệ. Login thất bại không làm dữ liệu học. Trình duyệt không được gửi timestamp tùy ý thay giờ server.
-- Account mới cần ít nhất **20 mẫu giờ trên 5 ngày khác nhau**. Tối đa một mẫu trong một giờ/ngày; các ngày có trọng số cân bằng. Login spam một ngày không đủ vượt cold start.
+- Account mới cần ít nhất **6 mẫu giờ hợp lệ**, không bắt buộc nhiều ngày. Tối đa một mẫu trong một giờ/ngày; các ngày có trọng số cân bằng. Đánh giá có ít hơn 20 mẫu hoặc dưới 5 ngày được ghi sơ bộ; login spam cùng giờ không đủ vượt cold start.
 - Mỗi lần đánh giá dùng tối đa 1.000 sự kiện trong 90 ngày **trước lần hiện tại**. Cùng giờ qua nửa đêm được xử lý vòng tròn 24 giờ; bandwidth 60 phút.
 - Ngưỡng negative-log-density được hiệu chỉnh leave-one-day-out: median + max(1,4*MAD), giảm tác động của một lần đăng nhập hiếm đơn lẻ.
 - Nếu chưa có LoginEvent, import lịch sử `AuditLog auth.login` có actor_id của chính user, trong giới hạn trên. Nguồn `legacy_audit` được ghi rõ. Không tự seed giờ giả vào tài khoản thật để làm demo.

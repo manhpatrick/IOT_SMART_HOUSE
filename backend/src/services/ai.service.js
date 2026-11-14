@@ -7,11 +7,14 @@ import { analyzeLogin } from '../ai/login-model.js';
 import { createLock } from '../utils/asyncLock.js';
 import { fail } from '../utils/errors.js';
 import { audit } from './audit.service.js';
+import {ensureLoginBootstrap} from './login-bootstrap.service.js';
+import {User} from '../../../database/models/index.js';
 
-export async function createAI({notify,enabled=true}) {
+export async function createAI({notify,enabled=true,loginSeed=false}) {
   const lock=createLock(),pending=new Set(),work=new Set();
   let worker=null,trainingId=null,busy=false,closed=false,cycle=null;
   await AiModel.updateMany({status:'training'},{$set:{status:'failed',error:'Huấn luyện bị gián đoạn bởi lần khởi động lại trước.'}});
+  if(enabled&&loginSeed)for(const user of await User.find({role:{$in:['operator','viewer']},status:'active'}).select('_id').lean())await ensureLoginBootstrap(user._id);
   const track=promise=>{work.add(promise);promise.finally(()=>work.delete(promise)).catch(()=>{});return promise;};
 
   async function train(device,actor,{days=7,includeDemo=false,confirmedNormal=false}={}) {
@@ -85,6 +88,7 @@ export async function createAI({notify,enabled=true}) {
       const old=await AuditLog.find({actor_id:user.id,action:'auth.login',created_at:{$lt:date,$gte:new Date(Date.parse(date)-90*86400_000)}}).sort({created_at:-1}).limit(1000).lean();
       for(const event of old)await LoginEvent.updateOne({_id:'audit-'+event._id},{$setOnInsert:{user_id:user.id,occurred_at:event.created_at,source:'legacy_audit',status:'insufficient_data',expires_at:new Date(Date.parse(event.created_at)+120*86400_000)}},{upsert:true});
     }
+    if(loginSeed)await ensureLoginBootstrap(user.id,date);
     const history=await LoginEvent.find({user_id:user.id,occurred_at:{$lt:date,$gte:new Date(Date.parse(date)-90*86400_000)}}).sort({occurred_at:-1}).limit(1000).lean();
     const analysis=analyzeLogin(history,date);
     const event=await LoginEvent.create({user_id:user.id,occurred_at:date,status:analysis.status,analysis,expires_at:new Date(Date.parse(date)+120*86400_000)});

@@ -1,5 +1,7 @@
 # NODO Home: nhiều nhà, operator và viewer
 
+**Cập nhật phạm vi:** nhóm chỉ làm web desktop. Phần mobile/PWA phía dưới là thiết kế cũ, không còn tính năng hiện hành. Đã bỏ manifest/cài app/thanh điều hướng điện thoại và gỡ worker/cache NODO cũ. Các vai trò dùng web như cũ; nút Đăng xuất ở header hủy session trên server. Điều khiển từ xa và micro dùng trên trình duyệt desktop.
+
 ## Mở giao diện
 
 - Admin console: `/` — tài khoản, kho thiết bị, provision/khóa/thu hồi, danh sách nhà và audit lọc theo nhà.

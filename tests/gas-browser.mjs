@@ -19,19 +19,20 @@ try{
  await page.getByRole('heading',{name:'Tổng quan hệ thống'}).waitFor();await page.goto(base+'/#devices');
  await page.locator('.gas-panel.gas-danger').getByText('CẢNH BÁO',{exact:true}).waitFor();
  const node=page.locator('article').filter({hasText:'Trạm môi trường'});
- await node.getByRole('button',{name:'Chi tiết thiết bị',exact:true}).click();await page.getByRole('button',{name:'Cấu hình & Auto/Manual',exact:true}).click();
+ await node.getByRole('button',{name:'Chi tiết thiết bị',exact:true}).click();await page.getByRole('button',{name:'Cấu hình ngưỡng',exact:true}).click();
  await page.getByLabel('Ngưỡng cảnh báo gas (ADC)',{exact:true}).fill('1800');
  await page.getByLabel('Kết thúc cảnh báo gas khi ≤ (ADC)',{exact:true}).fill('1100');
  await page.getByRole('button',{name:'Gửi cấu hình xuống node',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});
  await page.goto(base+'/#telemetry');await page.getByLabel('Chọn node').selectOption('node-01');
- await page.getByRole('columnheader',{name:'Gas (ADC raw)',exact:false}).waitFor();
+ await page.waitForFunction(()=>document.querySelectorAll('[data-summary-node]').length===0);
+ await page.locator('.telemetry-table').getByRole('columnheader',{name:'Gas (ADC raw)',exact:false}).waitFor();
  assert.ok(await page.locator('.telemetry-table').innerText().then(t=>t.includes('1600')));
- await page.goto(base+'/app#overview');await page.locator('.gas-panel').first().waitFor();
- await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.locator('header [data-action="logout"]').click();await page.getByRole('button',{name:'Operator',exact:true}).click();await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();await page.locator('.gas-panel').first().waitFor();
+ await page.setViewportSize({width:1280,height:900});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  mkdirSync('.artifacts',{recursive:true});await page.screenshot({path:'.artifacts/gas-mobile.png',fullPage:true});
  await page.setViewportSize({width:1440,height:1050});
  await page.locator('[data-action="logout"]').first().click();
  await page.getByRole('button',{name:'Viewer',exact:true}).click();await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();
- await page.locator('.gas-panel').first().waitFor();assert.equal(await page.getByRole('button',{name:'Cấu hình & chế độ',exact:true}).count(),0);
+ await page.locator('.gas-panel').first().waitFor();assert.equal(await page.getByRole('button',{name:'Chỉnh ngưỡng cảm biến',exact:true}).count(),0);
  assert.deepEqual(errors,[]);console.log('Gas browser passed: admin threshold config, telemetry/chart, Home mobile and viewer read-only.');
 }finally{await browser?.close();await app.close();await database.stop();}

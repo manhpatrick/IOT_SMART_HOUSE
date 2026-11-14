@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { Device, DeviceEvent, Home } from '../../../database/models/index.js';
+import { Device, DeviceEvent } from '../../../database/models/index.js';
 import { toPublic } from '../../../database/models/base.js';
 import { deviceSchema, configSchema } from '../validation/schemas.js';
 import { defaults } from '../utils/defaults.js';
 import { fail } from '../utils/errors.js';
 import { audit } from '../services/audit.service.js';
-import { devicesFor, scopedDevice, validateAssignments } from '../services/device.service.js';
-import { validateRoom, newToken, digest, migrateLegacyHomes } from '../services/home.service.js';
+import { devicesFor, scopedDevice } from '../services/device.service.js';
+import { newToken, digest } from '../services/home.service.js';
 
 export async function getDevices(req, res) { res.json(await devicesFor(req.user, req.app.locals.iot, req.query.homeId ? String(req.query.homeId) : null)); }
 
@@ -18,13 +18,10 @@ export async function getDevice(req, res) {
 
 export async function createDevice(req, res) {
   const input = deviceSchema.parse(req.body);
-  await validateAssignments(input);
-  await validateRoom(input.home_id, input.room_id);
-  if (input.home_id) input.owner_id = (await Home.findById(input.home_id).lean()).owner_id;
+  if(input.owner_id||input.home_id||input.room_id||input.viewer_ids.length)throw fail(400,'Thiết bị được bàn giao qua mã nhận; không gán chủ nhà hoặc viewer trực tiếp.');
   const { id, ...fields } = input;
   if (await Device.exists({ _id: id })) throw fail(409, 'Mã thiết bị đã tồn tại.');
   await Device.create({ _id: id, ...fields, viewer_ids: [...new Set(fields.viewer_ids)], config: defaults(input.profile) });
-  await migrateLegacyHomes();
   await DeviceEvent.create({ device_id: id, to_state: 'registered', actor_name: req.user.name });
   const created = await req.app.locals.iot.device(id);
   await audit(req.user, 'device.created', id, input.name, created.home_id);
@@ -34,14 +31,11 @@ export async function createDevice(req, res) {
 
 export async function updateDevice(req, res) {
   const device = await scopedDevice(req, true);
-  const input = deviceSchema.omit({ id: true, profile: true }).parse({ home_id: device.home_id, room_id: device.room_id, ...req.body });
-  await validateAssignments(input);
-  await validateRoom(input.home_id, input.room_id);
-  if (device.home_id && input.home_id !== device.home_id) throw fail(409, 'Không chuyển thiết bị đã nhận sang nhà khác qua sửa thông tin.');
-  if (input.home_id) input.owner_id = (await Home.findById(input.home_id).lean()).owner_id;
+  const input = deviceSchema.pick({name:true,location:true}).partial({location:true}).parse(req.body);
+  if(device.home_id&&input.location!==undefined&&input.location!==device.location)throw fail(400,'Vị trí trong nhà do operator quản lý.');
   if (device.lifecycle === 'decommissioned') throw fail(409, 'Thiết bị đã ngừng sử dụng.');
-  await Device.updateOne({ _id: device.id }, { $set: { ...input, viewer_ids: [...new Set(input.viewer_ids)] } }, { runValidators: true });
-  await audit(req.user, 'device.updated', device.id, input.name, input.home_id);
+  await Device.updateOne({ _id: device.id }, { $set: input }, { runValidators: true });
+  await audit(req.user, 'device.updated', device.id, input.name, device.home_id);
   req.app.locals.notify('device');
   res.json(await req.app.locals.iot.device(device.id));
 }
@@ -63,15 +57,20 @@ export async function changeLifecycle(req, res) {
 }
 
 export async function sendCommand(req, res) {
+  if (req.user.role !== 'operator') throw fail(403, 'Chỉ operator quản lý nhà được điều khiển thiết bị.');
   const device = await scopedDevice(req, true);
-  const input = z.object({ actuator: z.enum(['fan', 'light', 'buzzer']), value: z.boolean() }).strict().parse(req.body);
-  if ((device.profile === 'climate' && input.actuator === 'light') || (device.profile === 'lighting' && input.actuator !== 'light')) throw fail(400, 'Thiết bị không hỗ trợ đầu ra này.');
-  res.status(202).json(await req.app.locals.iot.sendCommand(device, req.user, 'actuator', input));
+  const input = z.object({ actuator: z.enum(['fan', 'light', 'buzzer']), value: z.boolean(), channel: z.enum(['manual','voice']).default('manual') }).strict().parse(req.body);
+  if (device.profile === 'lighting' && input.actuator !== 'light') throw fail(400, 'Thiết bị không hỗ trợ đầu ra này.');
+  res.status(202).json(await req.app.locals.iot.sendCommand(device, req.user, 'actuator', {actuator:input.actuator,value:input.value},input.channel==='voice'?'voice':'user'));
 }
 
 export async function updateConfig(req, res) {
-  const device = await scopedDevice(req, true), input = configSchema(device.profile).parse({ ...device.config, ...req.body });
-  res.status(202).json(await req.app.locals.iot.sendCommand(device, req.user, 'config', input));
+  const device = await scopedDevice(req, true), channel=z.enum(['manual','voice']).parse(req.body.channel??'manual');
+  const {channel:ignored,...changes}=req.body;
+  if (req.user.role === 'admin' && changes.mode !== undefined && changes.mode !== device.config.mode) throw fail(403, 'Admin không được chuyển chế độ điều khiển thiết bị.');
+  const input = configSchema(device.profile).parse({ ...device.config, ...changes });
+  if (req.user.role === 'admin' && input.mode !== device.config.mode) throw fail(403, 'Admin không được chuyển chế độ điều khiển thiết bị.');
+  res.status(202).json(await req.app.locals.iot.sendCommand(device, req.user, 'config', input, channel==='voice'?'voice':'user'));
 }
 
 export async function demoConnection(req, res) {

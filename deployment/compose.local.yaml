@@ -24,7 +24,9 @@ services:
       MONGODB_URI: mongodb://mongo:27017/nodo_docker_demo
       MONGODB_DB_NAME: nodo_docker_demo
       DEMO_MODE: "true"
+      DEMO_LOGIN_ENABLED: "true"
       AI_ENABLED: "true"
+      AI_LOGIN_SEED: "true"
       # Public demo value, strictly for the localhost-only setup.
       SESSION_SECRET: nodo-local-docker-demo-only-session-secret
       ADMIN_EMAIL: admin@nodo.local

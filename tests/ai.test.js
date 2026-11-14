@@ -2,7 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { initialize,forward,lossGradient } from '../backend/src/ai/rnn.js';
 import { prepareSeries,makeWindows,trainSensor,scoreSensor } from '../backend/src/ai/sensor-model.js';
-import { analyzeLogin,localLoginTime,circularDistance } from '../backend/src/ai/login-model.js';
+import { analyzeLogin,localLoginTime,circularDistance,loginExample } from '../backend/src/ai/login-model.js';
+
+test('one-day history can calibrate with six unique hour slots without waiting five days',()=>{
+ const history=[8,9,10,11,12,13].map(hour=>({occurred_at:new Date(Date.UTC(2026,9,19,hour-7,10)),status:'normal'}));
+ const familiar=analyzeLogin(history,new Date('2026-10-20T03:00:00Z'));
+ assert.equal(familiar.status,'normal');assert.equal(familiar.min_days,1);assert.equal(familiar.confidence,'preliminary');assert.match(familiar.calibration,/slot/);
+ assert.equal(analyzeLogin(history,new Date('2026-10-19T20:00:00Z')).status,'anomaly');
+ const demo=loginExample();assert.equal(demo.persisted,false);assert.deepEqual(demo.examples.map(e=>e.analysis.status),['normal','anomaly']);
+});
 
 export function sensorFixture(count=600,end=Date.now()) {
   const start=Math.floor(end/10000)*10000-count*10000;

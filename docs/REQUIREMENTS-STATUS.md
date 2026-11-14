@@ -6,7 +6,7 @@ Ngày rà soát ban đầu: **13/11/2026**, theo đề “IoT và ứng dụng�
 
 ## Phạm vi một ESP32
 
-Mục 4.2 yêu cầu **ít nhất một thiết bị vật lý**; từ hai node đối với nhóm bốn thành viên là **khuyến nghị**. Firmware đã nhận dùng một ESP32 với DHT11/MQ-2/LDR/LED/quạt/còi; BE cần profile gộp và firmware cần sửa giao thức. Chưa có bằng chứng compile/board thật. Một board gắn nhiều cảm biến vẫn là một node vật lý.
+Mục 4.2 yêu cầu **ít nhất một thiết bị vật lý**; từ hai node đối với nhóm bốn thành viên là **khuyến nghị**. Firmware đã nhận dùng một ESP32 với DHT11/MQ-2/LDR/LED/quạt/còi; BE/FE đã mở rộng climate nhận chung ba nhóm cảm biến; firmware cần sửa giao thức theo [ONE-NODE-MULTISENSOR](ONE-NODE-MULTISENSOR.md). Chưa có bằng chứng compile/board thật. Một board gắn nhiều cảm biến vẫn là một node vật lý.
 
 ## AI đáp ứng bảy nội dung trình bày như thế nào?
 

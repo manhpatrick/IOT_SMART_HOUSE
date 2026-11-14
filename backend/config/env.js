@@ -4,10 +4,12 @@ export function getConfig(overrides = {}) {
     dbName: process.env.MONGODB_DB_NAME || 'iot_admin',
     dnsServers: (process.env.MONGODB_DNS_SERVERS || '').split(',').map(value => value.trim()).filter(Boolean),
     demo: process.env.DEMO_MODE !== 'false',
+    quickLogin: process.env.DEMO_LOGIN_ENABLED === 'true',
     sessionSecret: process.env.SESSION_SECRET,
     adminEmail: process.env.ADMIN_EMAIL,
     adminPassword: process.env.ADMIN_PASSWORD,
     aiEnabled: process.env.AI_ENABLED !== 'false',
+    loginSeed: process.env.AI_LOGIN_SEED === 'true',
     mqtt: {
       url: process.env.MQTT_URL,
       username: process.env.MQTT_USERNAME,

@@ -8,7 +8,7 @@ const commandSchema = new mongoose.Schema({
   ack_received_at: { type: Date, default: null },
   ack_payload: { type: mongoose.Schema.Types.Mixed, default: null },
   actor_id: { type: String, ref: 'User', default: null },
-  source: { type: String, enum: ['user', 'gas_rule'], default: 'user' },
+  source: { type: String, enum: ['user', 'voice', 'gas_rule'], default: 'user' },
   kind: { type: String, enum: ['actuator', 'config'], required: true },
   payload: { type: mongoose.Schema.Types.Mixed, required: true },
   status: { type: String, enum: ['pending', 'applied', 'failed', 'timeout', 'cancelled'], default: 'pending' },

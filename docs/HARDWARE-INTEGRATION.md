@@ -1,6 +1,6 @@
 # Bàn giao và ghép một ESP32 với NODO
 
-**Phạm vi demo:** một ESP32. Firmware đã nhận có DHT11 + MQ-2 + LDR, LED/quạt/còi; còn lệch topic/JSON và cần profile BE gộp. Hiện dùng `hw-climate-01` để kiểm thử climate bằng MQTTX; phần lighting/hai board trong các ví dụ mở rộng không bắt buộc. Chi tiết [review firmware](../firmware/REVIEW.md) và [trạng thái hiện tại](CURRENT-STATUS.md).
+**Phạm vi demo:** một ESP32. Firmware đã nhận có DHT11 + MQ-2 + LDR, LED/quạt/còi; còn lệch topic/JSON. BE/FE đã mở rộng climate nhận chung DHT/MQ-2/LDR và điều khiển quạt/còi/đèn; xem [một node đa cảm biến](ONE-NODE-MULTISENSOR.md). Hiện dùng `hw-climate-01` để kiểm thử climate bằng MQTTX; phần lighting/hai board trong các ví dụ mở rộng không bắt buộc. Chi tiết [review firmware](../firmware/REVIEW.md) và [trạng thái hiện tại](CURRENT-STATUS.md).
 
 Làm buổi đầu trong cùng một Wi-Fi/LAN, ghép được từng đoạn rồi mới thử từ xa. Repo này chứa backend/web/PWA; hai bạn phần cứng viết và nạp firmware riêng cho ESP32. Backend nhận dữ liệu bằng MQTT, không có API HTTP để board POST telemetry.
 
@@ -157,7 +157,7 @@ Admin mở `http://127.0.0.1:3080`; kiểm tra trang Cài đặt báo broker k�
 
 Thực hiện lần lượt mỗi board, không lấy credential của board này dùng cho board kia:
 
-1. Đăng nhập admin → Thiết bị → Đăng ký. ID `hw-climate-01`, profile climate; node thứ hai `hw-light-01`, profile lighting. Để **kho/chưa vào nhà**, người phụ trách chưa gán; chưa chia sẻ viewer riêng.
+1. Đăng nhập admin → Thiết bị → Đăng ký. ID `hw-climate-01`, profile climate cho cả ba nhóm cảm biến; không cần node thứ hai. `hw-light-01`/lighting chỉ là ví dụ mở rộng cho board riêng. Để **kho/chưa vào nhà**, người phụ trách chưa gán; chưa chia sẻ viewer riêng.
 2. Chi tiết node → Cấp quyền kết nối. Chỉ tiếp tục nếu broker xác nhận thật, không có `simulated:true`. Ghi lại username/clientId/password một lần để giao riêng cho người nạp board. DB không lưu plaintext mật khẩu node để xem lại.
 3. Đóng rồi mở lại chi tiết node → Tạo mã nhận thiết bị. Mã này dùng trên web, hạn 24 giờ; **khác mật khẩu MQTT**.
 4. Operator đăng ký/đăng nhập → tạo Nhà A → tạo phòng → Thiết bị → Nhận thiết bị. Nhập Device ID + mã claim + phòng. Đây là bước quyền sở hữu trong hệ thống.
@@ -219,7 +219,7 @@ Payload và ví dụ đầy đủ: [MQTT-CONTRACT.md](MQTT-CONTRACT.md). JSON st
 - Boolean là true/false, không phải chuỗi "true" hay số 1/0.
 - Telemetry có deviceId, bootId, seq, timestamp và readings; status/ack hiện không nhận thêm deviceId/timestamp tùy ý.
 - Giờ UTC dạng ISO 8601, ví dụ có hậu tố `Z`. Khi thử phải dùng giờ hiện tại, không sao chép timestamp minh họa cũ.
-- Climate bắt buộc temperature + humidity, không thêm lightPercent. Lighting chỉ gửi lightPercent.
+- Climate bắt buộc temperature + humidity, nhận thêm lightPercent + gasRaw trong cùng readings. Lighting riêng chỉ gửi lightPercent. Không gửi ADC LDR 0–4095 vào lightPercent 0–100.
 - Heartbeat thiếu `fault` giữ lỗi cũ. Gửi `fault:null` chỉ khi đã xác nhận không còn lỗi, không dùng heartbeat để xóa lỗi một cách mù quáng.
 
 Tạo JSON mẫu có timestamp/bootId mới để kiểm tra giao thức trước khi ghép board:

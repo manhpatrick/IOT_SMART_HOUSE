@@ -3,6 +3,7 @@ import { AiResult, AccountAlert, LoginEvent, User } from '../../../database/mode
 import { toPublic } from '../../../database/models/base.js';
 import { scopedDevice, devicesFor, canWrite } from '../services/device.service.js';
 import { analyzeLogin } from '../ai/login-model.js';
+import {ensureLoginBootstrap} from '../services/login-bootstrap.service.js';
 
 export async function summary(req,res) {
   const devices=(await devicesFor(req.user,req.app.locals.iot)).filter(d=>d.profile==='climate');
@@ -20,8 +21,16 @@ export async function trainDevice(req,res) {
   res.status(202).json(await req.app.locals.ai.train(device,req.user,input));
 }
 export async function loginHistory(req,res) {
-  const events=await LoginEvent.find({user_id:req.user.id}).sort({occurred_at:-1}).limit(100).lean();
-  res.json({profile:analyzeLogin(events,new Date()),events:events.map(toPublic)});
+  if(req.app.locals.config.loginSeed)await ensureLoginBootstrap(req.user.id);
+  const now=new Date();
+  const [history,events]=await Promise.all([
+    LoginEvent.find({user_id:req.user.id,occurred_at:{$lt:now,$gte:new Date(now.getTime()-90*86400000)}}).sort({occurred_at:-1}).limit(1000).lean(),
+    LoginEvent.find({user_id:req.user.id,source:{$in:['server','legacy_audit']}}).sort({occurred_at:-1}).limit(100).lean(),
+  ]);
+  const latest=events[0];
+  res.json({profile:analyzeLogin(history,now,{includeLearning:true}),events:events.map(e=>({...toPublic(e),user_name:req.user.name,user_email:req.user.email})),
+    latest_evaluation:latest?{event_id:latest._id,occurred_at:latest.occurred_at,user_name:req.user.name,...(latest.analysis||{status:latest.status})}:null,
+    training:{seed_events:history.filter(e=>e.source==='bootstrap').length,observed_events:history.filter(e=>e.source!=='bootstrap').length}});
 }
 export async function securityAlerts(req,res) {
   const mine=req.query.mine==='true'||req.user.role!=='admin';

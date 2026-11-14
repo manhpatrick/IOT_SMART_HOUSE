@@ -52,6 +52,7 @@ export function trainSensor(rows,options={},onProgress=()=>{}) {
     ranges:{train:[trainPoints[0].time,trainPoints.at(-1).time],validation:[points[a].time,points[b-1].time],test:[points[b].time,points.at(-1).time]},
     windows:{train:train.length,validation:validation.length,test:test.length},curve:fitted.curve,threshold,calibration:'99th percentile validation residual; floor 0.08',
     test:forecastMetrics(fitted.model,test,scaler),baseline_persistence:forecastMetrics(fitted.model,test,scaler,true),
+    test_preview:test.filter((_,i)=>i%Math.max(1,Math.ceil(test.length/120))===0).map(sample=>({recorded_at:new Date(sample.time).toISOString(),actual:sample.actual,prediction:forward(fitted.model,sample.x).output.map((v,k)=>v*scaler.scale[k]+scaler.mean[k])})),
     detection_metrics:null,detection_note:'Không có nhãn bất thường độc lập trong dữ liệu huấn luyện; chưa công bố precision/recall/F1.',experimental:true}};
 }
 export function scoreSensor(artifact,rows,now=Date.now()) {
